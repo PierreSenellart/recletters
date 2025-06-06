@@ -1,2 +1,3 @@
 # recletters
-System for uploading recommendation letters
+
+Web site for uploading recommendation letters, implemented in Scala.
