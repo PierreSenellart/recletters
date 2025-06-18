@@ -1,0 +1,6 @@
+db {
+  default.driver=org.postgresql.driver
+  default.url = "jdbc:postgresql://localhost/DATABASE"
+  default.username = "USERNAME"
+  default.password = "PASSWORD"
+}
