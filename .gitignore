@@ -1,5 +1,7 @@
 logs
 target
+project
+/.bloop
 /.bsp
 /.idea
 /.idea_modules

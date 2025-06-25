@@ -1,6 +1,15 @@
+play.filters.disabled += "play.filters.csrf.CSRFFilter"
+
+play.mailer {
+  host = "localhost",
+}
+
 db {
   default.driver=org.postgresql.driver
   default.url = "jdbc:postgresql://localhost/DATABASE"
   default.username = "USERNAME"
   default.password = "PASSWORD"
 }
+
+site_name = "SITE_NAME"
+site_url  = "SITE_URL"

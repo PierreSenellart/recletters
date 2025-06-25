@@ -1,25 +1,38 @@
-@*
- * This template is called from the `index` template. This template
- * handles the rendering of the page header and body tags. It takes
- * two arguments, a `String` for the title of the page and an `Html`
- * object to insert into the body of the page.
- *@
-@(title: String)(content: Html)
+@(title: String,menu:Boolean=true)(content: Html)(
+  implicit active_year : Int, years : Seq[Int], user: Option[User],
+  config: play.api.Configuration)
 
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        @* Here's where we render the page title `String`. *@
-        <title>@title</title>
-        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <title>@{config.get[String]("site_name")} @active_year Letters — @title</title>
+      <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
+   </head>
+   <body>
+     <form id="year_choice" action="">
+       <select name="year" id="select_year">
+         @for(y <- years.reverse) {
+           <option value="@y" @if(y==active_year) {selected="selected"}>@{y-1} – @y</option>
+         }
+       </select>
+     </form>
+     @if(menu) {
+     <p id="user_info">
+        @if(user.isDefined) {
+          Logged in as @user.get.first_name @user.get.last_name (<a href="/logout">Log out</a>)
+        } else {
+          <a href="/login">Log in</a>
+        }
+      </p>
+     }
+    <script src="@routes.Assets.versioned("scripts/main.js")"></script>
+     <h1>@{config.get[String]("site_name")} @active_year Letters — @title</h1>
+     <div id="main_content">
+       @content
 
-    </head>
-    <body>
-        @* And here's where we render the `Html` object containing
-         * the page content. *@
-        @content
-
-      <script src="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"></script>
-    </body>
+       @if(menu) {
+        }
+    </div>
+  </body>
 </html>

@@ -1,0 +1,6 @@
+@(elements: helper.FieldElements)
+<div class="@if(elements.hasErrors) {error}">
+<label for="@elements.id">@{elements.label.toString.replace('_',' ').capitalize}@if(elements.label.toString == ""){}else{:}</label>
+    @elements.input
+    <span class="errors">@elements.errors.mkString(", ")</span>
+</div>

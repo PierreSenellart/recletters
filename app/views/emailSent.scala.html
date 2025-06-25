@@ -1,0 +1,6 @@
+@(email: String)(implicit active_year: Int, years: Seq[Int], user: Option[User], config: play.api.Configuration)
+
+@main("Password reinitialization") {
+  <p>An email with a password reinitialization link has been sent to
+  <code>@email</code>.</p>
+}

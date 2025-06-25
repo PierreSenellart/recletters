@@ -1,0 +1,25 @@
+@(f: Form[(String,String,String)])(implicit messagesProvider:
+MessagesProvider, active_year: Int, years: Seq[Int], user: Option[User],
+configuration: play.api.Configuration)
+
+@import views.html.helper.FieldConstructor
+@implicitField: FieldConstructor = @{FieldConstructor(fieldConstructorTemplate.f)}
+
+@main("Log in") {
+    @if(f.hasGlobalErrors) {
+      @for(error <- f.globalErrors) {
+        <p class="error">@error.format</p>
+      }
+    }
+
+  @helper.form(action = routes.AuthController.authenticate(),
+    Symbol("id") -> "login") {
+      @helper.inputText(f("email"), Symbol("type") -> "email")
+      @helper.inputText(f("path"), Symbol("type") -> "hidden", Symbol("_label") -> "")
+      @helper.inputPassword(f("password"))
+    <div>
+      <input type="submit" value="Log in">
+    </div>
+    <p><a href="/init_password">First login or password forgotten?</p></a>
+  }
+}
