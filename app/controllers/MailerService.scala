@@ -8,11 +8,14 @@ import play.api.libs.mailer._
 
 class MailerService @Inject() (mailerClient: MailerClient)(implicit config: Configuration)
 {
+  val site = config.get[String]("site_name")
+  val from = config.get[String]("email_from")
+
   def sendPasswordInitEmail(to: String, token: String) = {
-    val url = config.get[String]("site_url") + "/reset_password?token=" + token;
+    val url = config.get[String]("site_url") + "/reset_password?token=" + token
 
     val text = ("""You have requested to reset the password needed to access the
-                  |Web site of """ + config.get[String]("site_name") + """ Letters.
+                  |Web site of """ + site + """ Letters.
                   |
                   |To do so, please access the following URL:"""+
                   "\n"+url+"""
@@ -23,8 +26,35 @@ class MailerService @Inject() (mailerClient: MailerClient)(implicit config: Conf
                   |You will then be able to log in using your email ("""+to+").").stripMargin
 
     val email = Email(
-      config.get[String]("site_name")+" Letters Password Reinitialization",
-      "Pierre Senellart <pierre@senellart.com>",
+      site +" Letters Password Reinitialization",
+      from,
+      Seq(to),
+      bodyText = Some(text),
+    )
+    mailerClient.send(email)
+  }
+
+  def sendRefereeRequest(name: String, to: String, token: String) = {
+    val url = config.get[String]("site_url") + "/submit?token=" + token;
+
+    val text = ("""Hello,
+                  |
+                  |""" + name + """ indicated you as a referee for their application
+                  |to the """+ site +""".
+                  |
+                  |Please access the following URL to provide your reference (or to decline
+                  |to do so).
+                  |
+                  |  """ + url + """
+                  |
+                  |Thank you in advance,
+                  |
+                  |-- """+"""
+                  |""" + site + """ committee""").stripMargin
+
+    val email = Email(
+      site+" Referee Request",
+      from,
       Seq(to),
       bodyText = Some(text),
     )

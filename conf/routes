@@ -3,7 +3,7 @@
 # https://www.playframework.com/documentation/latest/ScalaRouting
 # ~~~~
 
-GET     /                        controllers.MainController.intro()
+GET  /                           controllers.MainController.intro()
 
 GET  /login                      controllers.AuthController.login(path: Option[String])
 POST /authenticate               controllers.AuthController.authenticate()
@@ -12,6 +12,15 @@ GET  /init_password              controllers.AuthController.showInitPassword()
 POST /init_password              controllers.AuthController.initPassword()
 GET  /reset_password             controllers.AuthController.showResetPassword(token: String)
 POST /reset_password             controllers.AuthController.resetPassword()
+
+GET  /add                        controllers.RefereeController.showAdd()
+POST /add                        controllers.RefereeController.add()
+GET  /requests                   controllers.RefereeController.list()
+POST /sendRequestEmails          controllers.RefereeController.sendRequestEmails()
+GET  /submit                     controllers.RefereeController.showSubmit(token: String)
+POST /submit                     controllers.RefereeController.submit()
+GET  /lettert                    controllers.RefereeController.getLetterByToken(token: String)
+GET  /letter                     controllers.RefereeController.getLetter(id: Long, email: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

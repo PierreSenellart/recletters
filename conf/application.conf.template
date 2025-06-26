@@ -11,5 +11,7 @@ db {
   default.password = "PASSWORD"
 }
 
-site_name = "SITE_NAME"
-site_url  = "SITE_URL"
+site_name  = "SITE_NAME"
+site_url   = "SITE_URL"
+main_site_url = "MAIN_SITE_URL"
+email_from = "EMAIL_FROM"

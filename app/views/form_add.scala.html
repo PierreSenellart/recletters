@@ -1,0 +1,36 @@
+@(f: Form[RefereeRequest])(
+  implicit request: Request[AnyContent],
+  messagesProvider: MessagesProvider,
+  active_year: Int,
+  years: Seq[Int],
+  user: Option[User],
+  config: play.api.Configuration
+)
+
+@import views.html.helper.FieldConstructor
+@implicitField: FieldConstructor = @{FieldConstructor(fieldConstructorTemplate.f)}
+
+@main("Add a new request") {
+
+@if(f.hasGlobalErrors) {
+<ul class="error">
+  @for(error <- f.globalErrors) { <li>@error.format</li>
+    }
+</ul>
+}
+
+@helper.form(
+action = routes.RefereeController.add(),
+Symbol("id") -> "add") {
+<div>
+  @helper.inputText(f("dossier_name"), Symbol("_label") -> "Name of person being referred")
+  @helper.inputText(f("dossier_details"), Symbol("_label") -> "Optional details on the dossier")
+  @helper.inputText(f("dossier_url"), Symbol("_label") -> "Optional URL of the dossier")
+  @helper.inputText(f("email"), Symbol("_label") -> "E-mail address of the referee")
+  @helper.inputText(f("details"), Symbol("_label") -> "Optional details on the referee")
+
+  <input type="submit" value="Add">
+</div>
+}
+
+}

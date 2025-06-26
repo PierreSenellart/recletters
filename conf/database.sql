@@ -19,7 +19,6 @@ CREATE TYPE request_status AS ENUM (
 
 CREATE TABLE referee_request (
   dossier INT REFERENCES dossier (id) NOT NULL,
-  name TEXT NOT NULL,
   email TEXT NOT NULL,
   details TEXT,
   status request_status NOT NULL DEFAULT 'new',
@@ -30,6 +29,7 @@ CREATE TABLE referee_request (
 CREATE TABLE referee_letter (
   dossier INT NOT NULL,
   email TEXT NOT NULL,
+  name TEXT NOT NULL,
   letter bytea,
   time TIMESTAMP NOT NULL DEFAULT NOW (),
   PRIMARY KEY (dossier, email),

@@ -1,0 +1,99 @@
+@(r: Option[RefereeRequest], token: String, valid: Option[Boolean])(
+  implicit request: Request[AnyContent],
+  messagesProvider: MessagesProvider,
+  active_year: Int,
+  years: Seq[Int],
+  user: Option[User],
+  config: play.api.Configuration
+)
+
+@main("Submit a referee letter") {
+
+<script>
+function validate() {
+  if(document.getElementById("name").value == '') {
+    alert("Please enter your name.");
+    document.getElementById("name").focus();
+    return false;
+  } else if(document.getElementById("status_r").checked &&
+            document.getElementById("letter").value == "") {
+    alert("Please select a file to upload.");
+    document.getElementById("letter").focus();
+    return false;
+  }
+  return true;
+}
+
+function showHideFile() {
+  document.getElementById('letter_box').style.visibility=
+    document.getElementById("status_r").checked?"visible":"hidden";
+}
+</script>
+
+@if(r.isDefined) {
+  <p><strong>@{r.get.dossier.name}</strong> is applying for the
+  <a href="@{config.get[String]("main_site_url")}">@{config.get[String]("site_name")}</a>
+  and has requested a reference letter from you.
+  </p>
+
+  @if(valid.isDefined) {
+    @if(valid.get) {
+      <p class="ok">We have successfully received your
+      @if(r.get.status==RequestStatus.received) {
+        <a href="lettert?token=@{token}">recommendation</a>.
+      } else {
+        wish not to provide a recommendation.
+      }
+      <br>
+
+      You can still make changes below if you wish.</p>
+    } else {
+      <p class="error">An error occurred while processing your
+      recommendation.</p>
+    }
+  }
+
+  @helper.form(
+  action = routes.RefereeController.submit(),
+  Symbol("enctype") -> "multipart/form-data",
+  Symbol("id") -> "submit",
+  Symbol("onsubmit") -> "return validate()") {
+    <div>
+      <input type="hidden" name="token" value="@{token}">
+      <label for="name">E-mail of the referee:</label>
+      <input type="text" name="email" id="email" value="@{r.get.email}" disabled="disabled" size="40">
+    </div>
+    <div>
+      <label for="name">Full name of the referee:</label>
+      <input type="text" name="name" id="name" size="40">
+    </div>
+    <p>
+      Are you willing to submit a reference letter?
+      <input type="radio" id="status_r" name="status" value="received" checked="checked" onclick="showHideFile()">
+      <label for="status_r">yes</label>
+
+      <input type="radio" id="status_d" name="status" value="declined" onclick="showHideFile()">
+      <label for="status_d">no</label>
+    </p>
+
+    <div id="letter_box">
+      <label for="letter">Letter (PDF format):</label>
+      <input type="file" accept=".pdf,application/pdf" name="letter" id="letter">
+    </div>
+
+  <div>
+    <input type="submit" value="Submit">
+  </div>
+  }
+
+<script>
+@if(r.get.status==RequestStatus.declined) {
+document.getElementById('status_d').checked = true;
+}
+
+showHideFile();
+</script>
+} else {
+  Invalid token: @{token}
+}
+}

@@ -1,0 +1,45 @@
+@(requests: Seq[RefereeRequest])(
+  implicit active_year: Int,
+  years: Seq[Int],
+  user: Option[User],
+  config: play.api.Configuration
+)
+
+@main("Referee requests") {
+<table>
+  <tr>
+    <th>Dossier Name</th>
+    <th>Dossier Details</th>
+    <th>Referee</th>
+    <th>Referee Details</th>
+    <th>Status</th>
+  </tr>
+  @for(r <- requests) {
+  <tr>
+    <td>
+      @if(r.dossier.url) {
+        <a href="@{r.dossier.url}">@{r.dossier.name}</a>
+      } else {
+        @{r.dossier.name}
+      }
+    </td>
+    <td>@{r.dossier.details}</td>
+    <td>@{r.email}</td>
+    <td>@{r.details}</td>
+    <td>@{r.status}</td>
+  </tr>
+  }
+</table>
+
+  @if(requests.exists(_.status==RequestStatus.news)) {
+    <form action="sendRequestEmails" method="post">
+      <input type="submit" value="Send request emails">
+    </form>
+  }
+
+<hr>
+
+<div>
+  <a href="add">Manually add a request</a>
+</div>
+}
