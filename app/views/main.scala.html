@@ -13,7 +13,7 @@
      <form id="year_choice" action="">
        <select name="year" id="select_year">
          @for(y <- years.reverse) {
-           <option value="@y" @if(y==active_year) {selected="selected"}>@{y-1} – @y</option>
+           <option value="@y" @if(y==active_year) {selected="selected"}>@y</option>
          }
        </select>
      </form>
