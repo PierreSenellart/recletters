@@ -40,7 +40,7 @@ function showHideFile() {
     @if(valid.get) {
       <p class="ok">We have successfully received your
       @if(r.get.status==RequestStatus.received) {
-        <a href="lettert?token=@{token}">recommendation</a>.
+        <a href="@routes.RefereeController.getLetterByToken(token)">recommendation</a>.
       } else {
         wish not to provide a recommendation.
       }

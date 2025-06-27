@@ -1,5 +1,10 @@
 @()(implicit active_year : Int, years : Seq[Int], user: Option[User], config: play.api.Configuration)
 
 @main("Home") {
-
+  @if(user.isDefined) {
+  <ul>
+    <li><a href="@routes.RefereeController.list()">List all referee requests</a></li>
+    <li><a href="@routes.RefereeController.showAdd()">Manually add a referee request</a></li>
+  </ul>
+  }
 }

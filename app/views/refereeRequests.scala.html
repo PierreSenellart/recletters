@@ -26,7 +26,11 @@
     <td>@{r.dossier.details}</td>
     <td>@{r.email}</td>
     <td>@{r.details}</td>
-    <td>@{r.status}</td>
+    <td>@if(r.status==RequestStatus.received) {
+          <a href="@routes.RefereeController.getLetter(r.dossier.id,r.email)">received</td>
+        } else {
+          @{r.status}
+        }</td>
   </tr>
   }
 </table>
@@ -40,6 +44,6 @@
 <hr>
 
 <div>
-  <a href="add">Manually add a request</a>
+  <a href="@routes.RefereeController.showAdd()">Manually add a request</a>
 </div>
 }

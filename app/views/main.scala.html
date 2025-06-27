@@ -20,9 +20,10 @@
      @if(menu) {
      <p id="user_info">
         @if(user.isDefined) {
-          Logged in as @user.get.first_name @user.get.last_name (<a href="/logout">Log out</a>)
+          Logged in as @user.get.first_name @user.get.last_name (<a
+            href="@routes.AuthController.logout()">Log out</a>)
         } else {
-          <a href="/login">Log in</a>
+          <a href="@routes.AuthController.login(None)">Log in</a>
         }
       </p>
      }
