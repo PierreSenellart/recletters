@@ -85,7 +85,7 @@ class RefereeController @Inject() (
       )
   }
 
-  def sendRequestEmails() = withAuth() {
+  def sendRequestEmails() : Action[AnyContent] = Action {
     implicit request =>
       for (r <- model.findAll(active_year, Some(RequestStatus.news))) {
         mailer.sendRefereeRequest(r.dossier.name, r.email, model.generateToken(r))
