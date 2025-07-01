@@ -120,7 +120,7 @@ class AuthController @Inject() (
       .fold(
         formWithErrors => BadRequest(views.html.login(formWithErrors)),
         data =>
-          Redirect(if (data._3 != "") data._3 else "/").withSession(
+          (if (data._3 != "") Redirect(data._3) else Redirect(routes.MainController.intro())).withSession(
             request.session + ("userid" -> userService
               .getId(data._1)
               .get
