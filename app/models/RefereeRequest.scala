@@ -55,7 +55,8 @@ class RefereeRequestService @Inject() (db: Database) {
     db.withConnection { implicit connection =>
       SQL("""SELECT *
              FROM referee_request JOIN dossier ON dossier=id
-             WHERE year={year} AND ({status} IS NULL OR status={status}::request_status)""")
+             WHERE year={year} AND ({status} IS NULL OR status={status}::request_status)
+             ORDER BY dossier, status_update, referee_request.details""")
                .on("year" -> year, "status" -> status.map(_.toString))
                .as(parser().*)
     }
