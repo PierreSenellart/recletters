@@ -36,6 +36,7 @@ class MailerService @Inject() (mailerClient: MailerClient)(implicit config: Conf
 
   def sendRefereeRequest(name: String, to: String, token: String) = {
     val url = config.get[String]("site_url") + "/submit?token=" + token;
+    val deadline = config.get[String]("deadline")
 
     val text = ("""Hello,
                   |
@@ -46,6 +47,8 @@ class MailerService @Inject() (mailerClient: MailerClient)(implicit config: Conf
                   |to do so).
                   |
                   |  """ + url + """
+                  |
+                  |We need to receive your letter by """ + deadline +++ """.
                   |
                   |Thank you in advance,
                   |
