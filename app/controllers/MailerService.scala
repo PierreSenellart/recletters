@@ -48,7 +48,7 @@ class MailerService @Inject() (mailerClient: MailerClient)(implicit config: Conf
                   |
                   |  """ + url + """
                   |
-                  |We need to receive your letter by """ + deadline +++ """.
+                  |We need to receive your letter by """ + deadline + """.
                   |
                   |Thank you in advance,
                   |
