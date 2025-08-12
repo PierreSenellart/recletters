@@ -121,7 +121,7 @@ class RefereeController @Inject() (
         model.setDeclined(r.get)
       }
 
-      Ok(views.html.form_submit(r, token, Some(true)))
+      Ok(views.html.form_submit(model.findByRefereeToken(token), token, Some(true)))
   }
 
   def getLetterByToken(token: String) : Action[AnyContent] = Action {
