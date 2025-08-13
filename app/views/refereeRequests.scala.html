@@ -24,7 +24,12 @@
       }
     </td>
     <td>@{r.dossier.details}</td>
-    <td>@{r.email}</td>
+    <td><a href="mailto:@{r.email}">@if(r.name) {
+        @{r.name.get}
+      } else {
+        @{r.email}
+      }
+    </td>
     <td>@{r.details}</td>
     <td>@if(r.status==RequestStatus.received) {
           <a href="@routes.RefereeController.getLetter(r.dossier.id,r.email)">received</td>

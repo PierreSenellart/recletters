@@ -36,6 +36,7 @@ case class RefereeRequest(
     dossier: Dossier,
     email: String,
     details: Option[String],
+    name: Option[String],
     status: RequestStatus.RequestStatus,
     status_update: ZonedDateTime
 )
@@ -53,8 +54,10 @@ class RefereeRequestService @Inject() (db: Database) {
   def findAll(year: Int, status: Option[RequestStatus.RequestStatus] = None):
     Seq[RefereeRequest] = {
     db.withConnection { implicit connection =>
-      SQL("""SELECT *
-             FROM referee_request JOIN dossier ON dossier=id
+      SQL("""SELECT referee_request.*, dossier.*, referee_letter.name AS "referee_request.name"
+             FROM referee_request
+             NATURAL LEFT JOIN referee_letter
+             JOIN dossier ON referee_request.dossier=id
              WHERE year={year} AND ({status} IS NULL OR status={status}::request_status)
              ORDER BY dossier, status_update, referee_request.details""")
                .on("year" -> year, "status" -> status.map(_.toString))
@@ -64,8 +67,10 @@ class RefereeRequestService @Inject() (db: Database) {
 
   def findByRefereeToken(token: String) : Option[RefereeRequest] = {
     db.withConnection { implicit connection =>
-      SQL"""SELECT referee_request.*, dossier.*
-            FROM referee_request JOIN dossier ON dossier=id, referee_token
+      SQL"""SELECT referee_request.*, dossier.*, referee_letter.name AS "referee_request.name"
+            FROM referee_request
+            NATURAL LEFT JOIN referee_letter
+            JOIN dossier ON referee_request.dossier=id, referee_token
             WHERE (referee_request.dossier,referee_request.email) =
                   (referee_token.dossier,referee_token.email) AND
                   token=$token""".as(parser().singleOpt)

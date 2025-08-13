@@ -50,6 +50,7 @@ class RefereeController @Inject() (
         ),
         e,
         d,
+        None,
         RequestStatus.news,
         ZonedDateTime.now()
       )

@@ -65,7 +65,7 @@ function showHideFile() {
     </div>
     <div>
       <label for="name">Full name of the referee:</label>
-      <input type="text" name="name" id="name" size="40">
+      <input type="text" name="name" id="name" size="40" value="@{r.get.name.getOrElse("")}">
     </div>
     <p>
       Are you willing to submit a reference letter?
