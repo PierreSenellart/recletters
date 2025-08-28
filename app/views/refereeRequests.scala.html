@@ -24,8 +24,8 @@
       }
     </td>
     <td>@{r.dossier.details}</td>
-    <td><a href="mailto:@{r.email}">@if(r.name) {
-        @{r.name.get}
+    <td>@if(r.name) {
+        <a href="mailto:@{r.email}">@{r.name.get}</a>
       } else {
         @{r.email}
       }
