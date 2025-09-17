@@ -123,7 +123,7 @@ class RefereeRequestService @Inject() (db: Database) {
 
   def updateStatusTime(r: RefereeRequest) = {
     db.withTransaction { implicit connection =>
-      SQL"UPDATE referee_request SET status_update=NOW() WHERE dossier=${r.dossier.id} AND email=${r.email}"
+      SQL"UPDATE referee_request SET status_update=NOW() WHERE dossier=${r.dossier.id} AND email=${r.email}".executeUpdate()
     }
   }
 
