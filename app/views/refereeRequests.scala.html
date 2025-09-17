@@ -49,6 +49,14 @@
 <hr>
 
 <div>
-  <a href="@routes.RefereeController.showAdd()">Manually add a request</a>
+  <form action="@routes.RefereeController.showAdd()">
+    <input type="submit" value="Manually add a request">
+  </form>
+  <form action="@routes.RefereeController.sendRequestEmails()" method="post">
+    <input type="submit" value="Send request emails">
+  </form>
+  <form action="@routes.RefereeController.sendRequestReminderEmails()" method="post">
+    <input type="submit" value="Send request email reminders">
+  </form>
 </div>
 }
