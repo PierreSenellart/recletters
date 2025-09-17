@@ -114,6 +114,13 @@ class RefereeRequestService @Inject() (db: Database) {
     }
   }
 
+  def getToken(r: RefereeRequest): String = {
+    db.withTransaction { implicit connection =>
+      SQL"SELECT token FROM referee_token WHERE dossier=${r.dossier.id} AND email=${r.email}"
+          .as(get[String]("token").single)
+    }
+  }
+
   def receiveLetter(r: RefereeRequest, name: String, letter: Array[Byte]) = {
     db.withTransaction { implicit connection =>
       SQL"DELETE FROM referee_letter WHERE dossier=${r.dossier.id} AND email=${r.email}"

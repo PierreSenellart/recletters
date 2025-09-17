@@ -1,5 +1,8 @@
 package controllers
 
+import java.time.temporal.ChronoUnit
+import java.time.ZoneId
+import java.time.LocalDate
 import javax.inject._
 
 import play.api._
@@ -90,6 +93,15 @@ class RefereeController @Inject() (
     implicit request =>
       for (r <- model.findAll(active_year, Some(RequestStatus.news))) {
         mailer.sendRefereeRequest(r.dossier.name, r.email, model.generateToken(r))
+      }
+      Redirect(routes.RefereeController.list())
+  }
+
+  def sendRequestReminderEmails() : Action[AnyContent] = Action {
+    implicit request =>
+      for (r <- model.findAll(active_year, Some(RequestStatus.requested))) {
+        if(ChronoUnit.DAYS.between(r.status_update.toLocalDate, LocalDate.now(ZoneId.of("Europe/Paris")))>=7)
+          mailer.sendRefereeRequestReminder(r.dossier.name, r.email, model.getToken(r))
       }
       Redirect(routes.RefereeController.list())
   }

@@ -64,4 +64,34 @@ class MailerService @Inject() (mailerClient: MailerClient)(implicit config: Conf
     mailerClient.send(email)
   }
 
+  def sendRefereeRequestReminder(name: String, to: String, token: String) = {
+    val url = config.get[String]("site_url") + "/submit?token=" + token;
+    val deadline = config.get[String]("deadline")
+
+    val text = ("""Hello,
+                  |
+                  |This is a reminder that """ + name + """ indicated you as a referee for
+                  |their application to the """+ site +""".
+                  |
+                  |We remind you that the deadline to do so is """ + deadline + """.
+                  |
+                  |Please access the following URL to provide your reference (or to decline
+                  |to do so).
+                  |
+                  |  """ + url + """
+                  |
+                  |Thank you in advance,
+                  |
+                  |-- """+"""
+                  |""" + site + """ committee""").stripMargin
+
+    val email = Email(
+      site+" Referee Request Reminder",
+      from,
+      Seq(to),
+      bodyText = Some(text),
+    )
+    mailerClient.send(email)
+  }
+
 }
