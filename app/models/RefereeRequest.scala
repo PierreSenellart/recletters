@@ -121,6 +121,12 @@ class RefereeRequestService @Inject() (db: Database) {
     }
   }
 
+  def updateStatusTime(r: RefereeRequest) = {
+    db.withTransaction { implicit connection =>
+      SQL"UPDATE referee_request SET status_update=NOW() WHERE dossier=${r.dossier.id} AND email=${r.email}"
+    }
+  }
+
   def receiveLetter(r: RefereeRequest, name: String, letter: Array[Byte]) = {
     db.withTransaction { implicit connection =>
       SQL"DELETE FROM referee_letter WHERE dossier=${r.dossier.id} AND email=${r.email}"
