@@ -136,7 +136,7 @@ class RefereeRequestService @Inject() (db: Database) {
             VALUES(${r.dossier.id}, ${r.email}, ${name}, ${letter})"""
         .executeUpdate()
 
-      SQL"""UPDATE referee_request SET status='received'
+      SQL"""UPDATE referee_request SET status='received', status_update=NOW()
             WHERE dossier=${r.dossier.id} AND email=${r.email}"""
         .executeUpdate()
     }
@@ -147,7 +147,7 @@ class RefereeRequestService @Inject() (db: Database) {
       SQL"DELETE FROM referee_letter WHERE dossier=${r.dossier.id} AND email=${r.email}"
         .executeUpdate()
 
-      SQL"""UPDATE referee_request SET status='declined'
+      SQL"""UPDATE referee_request SET status='declined', status_update=NOW()
             WHERE dossier=${r.dossier.id} AND email=${r.email}"""
         .executeUpdate()
     }
