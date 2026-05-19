@@ -23,10 +23,35 @@ import play.api.data.FormBinding.Implicits.formBinding
 import java.nio.file.Files
 
 class RefereeController @Inject() (
-    mailer: MailerService
+    mailer: MailerService,
+    apiAuth: ApiAuthAction
 )(implicit db: Database, cc: ControllerComponents, config: Configuration)
     extends MainController {
   val model = new RefereeRequestService(db)
+
+  private def doSendRequestEmails(year: Int): Int = {
+    val rs = model.findAll(year, Some(RequestStatus.news))
+    for (r <- rs)
+      mailer.sendRefereeRequest(r.dossier.name, r.email, model.generateToken(r))
+    rs.size
+  }
+
+  private def doSendRequestReminderEmails(year: Int): Int = {
+    var n = 0
+    for (r <- model.findAll(year, Some(RequestStatus.requested))) {
+      if (
+        ChronoUnit.DAYS.between(
+          r.status_update.toLocalDate,
+          LocalDate.now(ZoneId.of("Europe/Paris"))
+        ) >= 7
+      ) {
+        mailer.sendRefereeRequestReminder(r.dossier.name, r.email, model.getToken(r))
+        model.updateStatusTime(r)
+        n += 1
+      }
+    }
+    n
+  }
 
   def list() = withAuth() {
     implicit request =>
@@ -89,23 +114,28 @@ class RefereeController @Inject() (
       )
   }
 
-  def sendRequestEmails() : Action[AnyContent] = Action {
+  def sendRequestEmails() = withAuth() {
     implicit request =>
-      for (r <- model.findAll(active_year, Some(RequestStatus.news))) {
-        mailer.sendRefereeRequest(r.dossier.name, r.email, model.generateToken(r))
-      }
+      doSendRequestEmails(active_year)
       Redirect(routes.RefereeController.list())
   }
 
-  def sendRequestReminderEmails() : Action[AnyContent] = Action {
+  def sendRequestReminderEmails() = withAuth() {
     implicit request =>
-      for (r <- model.findAll(active_year, Some(RequestStatus.requested))) {
-        if(ChronoUnit.DAYS.between(r.status_update.toLocalDate, LocalDate.now(ZoneId.of("Europe/Paris")))>=7) {
-          mailer.sendRefereeRequestReminder(r.dossier.name, r.email, model.getToken(r))
-          model.updateStatusTime(r)
-        }
-      }
+      doSendRequestReminderEmails(active_year)
       Redirect(routes.RefereeController.list())
+  }
+
+  def apiSendRequestEmails(year: Int): Action[AnyContent] = apiAuth {
+    implicit request =>
+      val n = doSendRequestEmails(year)
+      Ok(s"sent $n\n")
+  }
+
+  def apiSendRequestReminderEmails(year: Int): Action[AnyContent] = apiAuth {
+    implicit request =>
+      val n = doSendRequestReminderEmails(year)
+      Ok(s"sent $n\n")
   }
 
   def showSubmit(token: String) : Action[AnyContent] = Action {
