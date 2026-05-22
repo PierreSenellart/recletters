@@ -7,29 +7,47 @@ on:
     branches: [main]
 
 jobs:
-  unit:
-    name: Unit tests (Scala 3 / JDK ${{ matrix.jdk }})
+  # Run the full test suite (unit + HTTP-layer integration) against a real
+  # PostgreSQL or MySQL/MariaDB instance bootstrapped on the runner. Each engine
+  # is bootstrapped with passwordless socket auth for the runner user; that
+  # matches the local-dev pattern (peer auth on PG, auth_socket on MySQL).
+  test:
+    name: Tests (${{ matrix.engine }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        jdk: [17, 21]
+        engine: [pg, mysql]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: ${{ matrix.jdk }}
+          java-version: 21
           cache: sbt
       - uses: sbt/setup-sbt@v1
-      - name: Compile and run unit-level specs only
-        # Integration specs (controllers.AppSpec) need a live DB and run in the
-        # `integration` job. The unit job only exercises the DB-free suites.
-        run: sbt -batch compile "testOnly models.* services.imports.*"
+
+      - name: Bootstrap PostgreSQL
+        if: matrix.engine == 'pg'
+        run: |
+          sudo systemctl start postgresql || sudo service postgresql start
+          sudo -u postgres createuser -s "$USER"
+
+      - name: Bootstrap MySQL/MariaDB
+        if: matrix.engine == 'mysql'
+        run: |
+          sudo systemctl start mysql || sudo service mysql start
+          sudo mysql -e "CREATE USER IF NOT EXISTS '$USER'@'localhost' IDENTIFIED WITH auth_socket;"
+          sudo mysql -e "GRANT ALL PRIVILEGES ON \`recletters\\_%\`.* TO '$USER'@'localhost';"
+          sudo mysql -e "FLUSH PRIVILEGES;"
+
+      - name: Run the full suite against ${{ matrix.engine }}
+        run: make test-${{ matrix.engine }}
 
   package-deb:
     name: Build .deb
     runs-on: ubuntu-latest
-    needs: unit
+    needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -45,38 +63,3 @@ jobs:
         with:
           name: recletters-deb
           path: target/*.deb
-
-  # Integration suite runs the same specs against both engines via the Unix
-  # socket on the runner's loopback. PostgreSQL bootstraps trivially with
-  # peer-auth-on-localhost via the postgres apt package; MySQL needs a
-  # matching auth_socket user. Both are scripted below.
-  integration:
-    name: Integration tests (${{ matrix.engine }})
-    runs-on: ubuntu-latest
-    needs: unit
-    strategy:
-      fail-fast: false
-      matrix:
-        engine: [pg, mysql]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-          cache: sbt
-      - uses: sbt/setup-sbt@v1
-      - name: Bootstrap PostgreSQL
-        if: matrix.engine == 'pg'
-        run: |
-          sudo systemctl start postgresql || sudo service postgresql start
-          sudo -u postgres createuser -s "$USER"
-      - name: Bootstrap MySQL/MariaDB
-        if: matrix.engine == 'mysql'
-        run: |
-          sudo systemctl start mysql || sudo service mysql start
-          sudo mysql -e "CREATE USER IF NOT EXISTS '$USER'@'localhost' IDENTIFIED WITH auth_socket;"
-          sudo mysql -e "GRANT ALL PRIVILEGES ON \`recletters\\_%\`.* TO '$USER'@'localhost';"
-          sudo mysql -e "FLUSH PRIVILEGES;"
-      - name: Run tests
-        run: make test-${{ matrix.engine }}
