@@ -1,9 +1,10 @@
 # recletters
 
 A small web application for collecting recommendation letters from referees.
-Applicants (or an importer) register dossiers and referee email addresses; the
-site emails referees a tokenised submission link; referees upload a PDF (or
-decline); committee members later download the letters.
+Committee members (or an importer) register dossiers and the referee email
+addresses each dossier nominates; the site emails referees a tokenised
+submission link; referees upload a PDF (or decline); committee members later
+download the letters.
 
 Built with Play Framework (Scala 3) and Anorm. Runs against PostgreSQL or
 MySQL/MariaDB.
@@ -11,7 +12,7 @@ MySQL/MariaDB.
 ## Is this for you?
 
 `recletters` is intended for a single institution or department running one or
-several recommendation-letter calls. A "call" can be:
+several recommendation-letter calls. A “call” can be:
 
 - an annual award round (the original use case);
 - a hiring committee for a specific position;

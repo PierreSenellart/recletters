@@ -2,7 +2,7 @@
 
 ## Creating a new call
 
-A "call" is the unit of work: an award round, a hiring committee, a grant
+A “call” is the unit of work: an award round, a hiring committee, a grant
 call, etc. Create one via the CLI:
 
 ```sh
@@ -12,7 +12,7 @@ recletters -main tools.NewCall \
 ```
 
 Calls are independent of the calendar year, so multiple parallel calls and
-one-offs are first-class. The "active" call is the most-recently-opening
+one-offs are first-class. The “active” call is the most-recently-opening
 non-archived call whose `deadline + grace_period` is still in the future.
 
 ## Sending invitations and reminders
