@@ -11,3 +11,4 @@ project
 /.metals
 /RUNNING_PID
 conf/application.conf
+PLAN.md
