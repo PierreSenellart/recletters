@@ -47,6 +47,7 @@ jobs:
           mysql -uroot -e "INSTALL PLUGIN auth_socket SONAME 'auth_socket.so';" || true
           mysql -uroot -e "CREATE USER IF NOT EXISTS '$USER'@'localhost' IDENTIFIED WITH auth_socket;"
           mysql -uroot -e "GRANT ALL PRIVILEGES ON \`recletters\\_%\`.* TO '$USER'@'localhost';"
+          mysql -uroot -e "GRANT ALL PRIVILEGES ON \`hotcrp\\_%\`.* TO '$USER'@'localhost';"
           mysql -uroot -e "FLUSH PRIVILEGES;"
 
       - name: Run the full suite against ${{ matrix.engine }}

@@ -28,8 +28,13 @@ case "$ENGINE" in
   mysql|mariadb)
     mysql -e "DROP DATABASE IF EXISTS \`$DB\`;"
     mysql -e "CREATE DATABASE \`$DB\` CHARACTER SET utf8mb4;"
+    # A second, empty database that imitates a sibling HotCRP install. The
+    # HotCRPImporter spec creates Paper / PaperOption tables and fixtures in
+    # there. Play Evolutions does not touch this DB (see conf/test-mysql.conf).
+    mysql -e "DROP DATABASE IF EXISTS hotcrp_test;"
+    mysql -e "CREATE DATABASE hotcrp_test CHARACTER SET utf8mb4;"
     ln -sf 1-mysql.sql "$ROOT/conf/evolutions/default/1.sql"
-    echo "MySQL test DB '$DB' ready."
+    echo "MySQL test DB '$DB' and 'hotcrp_test' ready."
     ;;
   *)
     echo "Unknown engine: $ENGINE (use pg | mysql)" >&2

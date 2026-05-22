@@ -54,16 +54,23 @@ JVM so the system property reaches the test classpath (see `build.sbt`).
 - **MySQL / MariaDB**: the current Unix user must have a matching
   `'username'@'localhost'` MySQL user authenticated with the
   `auth_socket` (MySQL ≥ 8) or `unix_socket` (MariaDB) plugin, with
-  privileges on `recletters_%`. Bootstrap once as MySQL root:
+  privileges on the two test-database name patterns: `recletters_%`
+  (the application DB) and `hotcrp_%` (the fixture DB used by the
+  HotCRPImporter spec). Bootstrap once as MySQL root:
 
   ```sql
   CREATE USER IF NOT EXISTS 'yourname'@'localhost' IDENTIFIED WITH auth_socket;
   GRANT ALL PRIVILEGES ON `recletters\_%`.* TO 'yourname'@'localhost';
+  GRANT ALL PRIVILEGES ON `hotcrp\_%`.*     TO 'yourname'@'localhost';
   FLUSH PRIVILEGES;
   ```
 
-  Verify: `mysql -e "CREATE DATABASE recletters_probe; DROP DATABASE recletters_probe;"`
-  must succeed with no password.
+  Verify (as your Unix user, no password):
+
+  ```sh
+  mysql -e "CREATE DATABASE recletters_probe; DROP DATABASE recletters_probe;"
+  mysql -e "CREATE DATABASE hotcrp_probe;     DROP DATABASE hotcrp_probe;"
+  ```
 
 ### How it works internally
 
