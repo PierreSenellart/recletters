@@ -21,8 +21,10 @@ jobs:
           java-version: ${{ matrix.jdk }}
           cache: sbt
       - uses: sbt/setup-sbt@v1
-      - name: Compile and run unit tests
-        run: sbt -batch compile test
+      - name: Compile and run unit-level specs only
+        # Integration specs (controllers.AppSpec) need a live DB and run in the
+        # `integration` job. The unit job only exercises the DB-free suites.
+        run: sbt -batch compile "testOnly models.* services.imports.*"
 
   package-deb:
     name: Build .deb
