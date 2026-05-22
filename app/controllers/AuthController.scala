@@ -6,54 +6,44 @@ import play.api._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.db._
-import play.api.i18n.I18nSupport
 import play.api.mvc._
-
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.ExecutionContext
-
-import models.User
-import models.UserService
 
 class AuthController @Inject() (
     val passwordRequestFormView: views.html.initPassword,
     mailer: MailerService
 )(implicit db: Database, cc: ControllerComponents, config: Configuration)
     extends MainController {
+
+  // Login form. We validate credentials in a separate step (after the field
+  // checks) rather than via a verifying() clause so the form-level error path
+  // does not invoke userService.
   val loginForm = Form(
     tuple(
-      "email" -> nonEmptyText,
+      "email"    -> nonEmptyText,
       "password" -> nonEmptyText,
-      "path" -> text
-    ) verifying ("Invalid email or password", result =>
-      result match {
-        case (email, password, path) => check(email, password)
-      })
+      "path"     -> text
+    )
   )
 
+  // No verifying() here: disclosing whether an address exists in the DB would
+  // be an enumeration oracle. We always render the "email sent" confirmation.
   val passwordRequestForm = Form(
-    single(
-      "email" -> nonEmptyText
-    ) verifying ("Unknown email", result =>
-      result match {
-        case email => userService.getId(email).isDefined
-      })
+    single("email" -> nonEmptyText)
   )
 
   val passwordResetForm = Form(
     tuple(
-      "new_password" -> nonEmptyText(minLength = 8),
+      "new_password"    -> nonEmptyText(minLength = 8),
       "verify_password" -> nonEmptyText(minLength = 8),
-      "token" -> nonEmptyText
-    ) verifying ("Passwords do not match", result =>
-      result match {
-        case (n, v, t) => n == v
-      })
+      "token"           -> nonEmptyText
+    ) verifying ("Passwords do not match", {
+      case (n, v, _) => n == v
+    })
   )
 
-  def check(username: String, password: String) =
-    userService.authenticate(username, password).isDefined
+  /** Same-origin paths only; rejects "//evil.com", "http://...", etc. */
+  private def safePath(p: String): Option[String] =
+    Option(p).filter(s => s.startsWith("/") && !s.startsWith("//"))
 
   def login(path: Option[String]): Action[AnyContent] = Action {
     implicit request =>
@@ -64,17 +54,18 @@ class AuthController @Inject() (
     Ok(passwordRequestFormView(passwordRequestForm))
   }
 
-  def initPassword = Action {
-    implicit request: Request[AnyContent] =>
-      passwordRequestForm.bindFromRequest().fold(
-        formWithErrors => {
-          BadRequest(passwordRequestFormView(formWithErrors))
-        },
+  def initPassword: Action[AnyContent] = Action { implicit request =>
+    passwordRequestForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => BadRequest(passwordRequestFormView(formWithErrors)),
         email => {
-          mailer.sendPasswordInitEmail(
-            email,
-            userService.generateToken(userService.getId(email).get)
-          )
+          // Always render the same response, regardless of whether the address
+          // exists, otherwise the response time and content would let an
+          // attacker enumerate registered committee members.
+          userService.getId(email).foreach { uid =>
+            mailer.sendPasswordInitEmail(email, userService.generateToken(uid))
+          }
           Ok(views.html.emailSent(email))
         }
       )
@@ -82,18 +73,20 @@ class AuthController @Inject() (
 
   def showResetPassword(token: String): Action[AnyContent] = Action {
     implicit request =>
-      val userId = userService.getUserFromToken(token)
-
-      if (userId.isDefined) {
-        val u = userService.find(userId.get).get
-        Ok(
-          views.html.resetPassword(
-            passwordResetForm.fill("", "", token),
-            u.first_name.getOrElse("") + " " + u.last_name.getOrElse("")
-          )
-        )
-      } else
-        Ok(views.html.passwordReset(false))
+      userService.getUserFromToken(token) match {
+        case Some(uid) =>
+          userService.find(uid) match {
+            case Some(u) =>
+              Ok(
+                views.html.resetPassword(
+                  passwordResetForm.fill("", "", token),
+                  u.first_name.getOrElse("") + " " + u.last_name.getOrElse("")
+                )
+              )
+            case None => Ok(views.html.passwordReset(false))
+          }
+        case None => Ok(views.html.passwordReset(false))
+      }
   }
 
   def resetPassword(): Action[AnyContent] = Action { implicit request =>
@@ -101,16 +94,16 @@ class AuthController @Inject() (
       .bindFromRequest()
       .fold(
         formWithErrors => BadRequest(views.html.resetPassword(formWithErrors)),
-        data =>
-          data match {
-            case (password, v, token) =>
-              val id = userService.getUserFromToken(token)
-              if (id.isDefined) {
-                userService.removeToken(id.get)
-                userService.setPassword(id.get, password)
-              }
-              Ok(views.html.passwordReset(id.isDefined))
+        { case (password, _, token) =>
+          userService.getUserFromToken(token) match {
+            case Some(id) =>
+              userService.removeToken(id)
+              userService.setPassword(id, password)
+              Ok(views.html.passwordReset(true))
+            case None =>
+              Ok(views.html.passwordReset(false))
           }
+        }
       )
   }
 
@@ -119,13 +112,21 @@ class AuthController @Inject() (
       .bindFromRequest()
       .fold(
         formWithErrors => BadRequest(views.html.login(formWithErrors)),
-        data =>
-          (if (data._3 != "") Redirect(data._3) else Redirect(routes.MainController.intro())).withSession(
-            request.session + ("userid" -> userService
-              .getId(data._1)
-              .get
-              .toString)
-          )
+        { case (email, password, redirectPath) =>
+          userService.authenticate(email, password) match {
+            case Some(u) =>
+              val target = safePath(redirectPath)
+                .getOrElse(routes.MainController.intro().url)
+              Redirect(target).withSession(
+                request.session + ("userid" -> u.id.toString)
+              )
+            case None =>
+              val formWithError = loginForm
+                .fill(email, "", redirectPath)
+                .withGlobalError("Invalid email or password")
+              BadRequest(views.html.login(formWithError))
+          }
+        }
       )
   }
 

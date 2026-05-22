@@ -1,25 +1,26 @@
-@(f: Form[(String,String,String)])(implicit messagesProvider:
-MessagesProvider, active_year: Int, years: Seq[Int], user: Option[User],
-configuration: play.api.Configuration)
+@(f: Form[(String, String, String)])(
+  implicit active_call: Option[Call], calls: Seq[Call], user: Option[User],
+  config: play.api.Configuration, messages: play.api.i18n.Messages,
+  request: RequestHeader)
 
 @import views.html.helper.FieldConstructor
 @implicitField: FieldConstructor = @{FieldConstructor(fieldConstructorTemplate.f)}
 
-@main("Log in") {
-    @if(f.hasGlobalErrors) {
-      @for(error <- f.globalErrors) {
-        <p class="error">@error.format</p>
-      }
+@main(messages("login.title")) {
+  @if(f.hasGlobalErrors) {
+    @for(error <- f.globalErrors) {
+      <p class="error">@error.format</p>
     }
+  }
 
   @helper.form(action = routes.AuthController.authenticate(),
-    Symbol("id") -> "login") {
-      @helper.inputText(f("email"), Symbol("type") -> "email")
-      @helper.inputText(f("path"), Symbol("type") -> "hidden", Symbol("_label") -> "")
-      @helper.inputPassword(f("password"))
+               Symbol("id") -> "login") {
+    @helper.inputText(f("email"), Symbol("type") -> "email", Symbol("_label") -> messages("login.email"))
+    @helper.inputText(f("path"), Symbol("type") -> "hidden", Symbol("_label") -> "")
+    @helper.inputPassword(f("password"), Symbol("_label") -> messages("login.password"))
     <div>
-      <input type="submit" value="Log in">
+      <input type="submit" value="@messages("login.submit")">
     </div>
-    <p><a href="@routes.AuthController.initPassword()">First login or password forgotten?</p></a>
+    <p><a href="@routes.AuthController.showInitPassword()">@messages("login.forgot")</a></p>
   }
 }

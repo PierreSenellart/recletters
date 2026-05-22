@@ -1,0 +1,32 @@
+# Sample systemd unit. The `.deb` produced by sbt-native-packager generates a
+# similar unit automatically; this file is for `sbt stage` deployments.
+#
+# Install to /etc/systemd/system/recletters.service then:
+#   systemctl daemon-reload
+#   systemctl enable --now recletters
+
+[Unit]
+Description=recletters — recommendation-letter collection service
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+User=recletters
+Group=recletters
+WorkingDirectory=/opt/recletters
+ExecStart=/opt/recletters/bin/recletters \
+    -Dconfig.file=/etc/recletters/application.conf \
+    -Dhttp.port=9000 \
+    -J-Xmx512m
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/recletters
+
+[Install]
+WantedBy=multi-user.target

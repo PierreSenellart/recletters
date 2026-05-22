@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit:
+    name: Unit tests (Scala 3 / JDK ${{ matrix.jdk }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk: [17, 21]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.jdk }}
+          cache: sbt
+      - uses: sbt/setup-sbt@v1
+      - name: Compile and run unit tests
+        run: sbt -batch compile test
+
+  package-deb:
+    name: Build .deb
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: sbt
+      - uses: sbt/setup-sbt@v1
+      - name: sbt debian:packageBin
+        run: sbt -batch "debian:packageBin"
+      - name: Upload .deb artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: recletters-deb
+          path: target/*.deb
+
+  # Integration suite runs the same specs against both engines via the Unix
+  # socket on the runner's loopback. PostgreSQL bootstraps trivially with
+  # peer-auth-on-localhost via the postgres apt package; MySQL needs a
+  # matching auth_socket user. Both are scripted below.
+  integration:
+    name: Integration tests (${{ matrix.engine }})
+    runs-on: ubuntu-latest
+    needs: unit
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [pg, mysql]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: sbt
+      - uses: sbt/setup-sbt@v1
+      - name: Bootstrap PostgreSQL
+        if: matrix.engine == 'pg'
+        run: |
+          sudo systemctl start postgresql || sudo service postgresql start
+          sudo -u postgres createuser -s "$USER"
+      - name: Bootstrap MySQL/MariaDB
+        if: matrix.engine == 'mysql'
+        run: |
+          sudo systemctl start mysql || sudo service mysql start
+          sudo mysql -e "CREATE USER IF NOT EXISTS '$USER'@'localhost' IDENTIFIED WITH auth_socket;"
+          sudo mysql -e "GRANT ALL PRIVILEGES ON \`recletters\\_%\`.* TO '$USER'@'localhost';"
+          sudo mysql -e "FLUSH PRIVILEGES;"
+      - name: Run tests
+        run: make test-${{ matrix.engine }}

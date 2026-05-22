@@ -1,0 +1,95 @@
+# Messages français.
+
+nav.login = Connexion
+nav.logout = Déconnexion
+nav.loggedInAs = Connecté·e en tant que
+
+intro.title = Accueil
+intro.listRequests = Lister toutes les demandes de recommandation
+intro.addManually = Ajouter manuellement une demande de recommandation
+intro.importDossiers = Importer des dossiers
+
+login.title = Connexion
+login.email = Adresse de courriel
+login.password = Mot de passe
+login.submit = Se connecter
+login.forgot = Première connexion ou mot de passe oublié ?
+
+initPassword.title = Réinitialiser le mot de passe
+initPassword.submit = Envoyer le courriel
+
+emailSent.title = Réinitialisation du mot de passe
+emailSent.body = Si cette adresse est enregistrée, un lien de réinitialisation du mot de passe a été envoyé à
+
+resetPassword.title = Choisir un nouveau mot de passe
+resetPassword.titleOk = Mot de passe réinitialisé
+resetPassword.titleFailed = Le mot de passe n''a pas pu être réinitialisé
+resetPassword.hello = Bonjour {0}.
+resetPassword.choose = Veuillez choisir un mot de passe d''au moins 8 caractères.
+resetPassword.new = Nouveau mot de passe
+resetPassword.verify = Veuillez retaper
+resetPassword.submit = Enregistrer
+passwordReset.ok = Votre mot de passe a été réinitialisé. Vous pouvez désormais
+passwordReset.failed = Votre mot de passe n''a pas pu être réinitialisé. Veuillez
+passwordReset.tryAgain = recommencer
+
+requests.title = Demandes de recommandation
+requests.dossierName = Nom du dossier
+requests.dossierDetails = Détails du dossier
+requests.referee = Recommandeur·euse
+requests.refereeDetails = Détails sur la recommandation
+requests.status = Statut
+requests.addManually = Ajouter manuellement une demande
+requests.sendRequests = Envoyer les courriels de demande
+requests.sendReminders = Envoyer les courriels de rappel
+
+add.title = Ajouter une nouvelle demande
+add.dossierName = Nom de la personne candidate
+add.dossierDetails = Détails optionnels sur le dossier
+add.dossierUrl = URL optionnelle du dossier
+add.refereeEmail = Adresse de courriel du·de la recommandeur·euse
+add.refereeDetails = Détails optionnels sur le·la recommandeur·euse
+add.refereeRole = Rôle du·de la recommandeur·euse (encadrant·e, externe, …)
+add.submit = Ajouter
+
+submit.title = Soumettre une lettre de recommandation
+submit.intro = postule auprès du
+submit.refereeEmail = Adresse du·de la recommandeur·euse :
+submit.refereeName = Nom complet du·de la recommandeur·euse :
+submit.willing = Acceptez-vous de soumettre une lettre de recommandation ?
+submit.yes = oui
+submit.no = non
+submit.letter = Lettre (format PDF) :
+submit.submit = Soumettre
+submit.invalidToken = Jeton invalide ou expiré.
+submit.alert.noName = Veuillez entrer votre nom.
+submit.alert.noFile = Veuillez sélectionner un fichier à téléverser.
+submit.received.intro = Nous avons bien reçu votre
+submit.received.letter = lettre de recommandation
+submit.received.decline = souhait de ne pas fournir de recommandation.
+submit.received.canChange = Vous pouvez encore modifier votre choix ci-dessous si vous le souhaitez.
+submit.error = Une erreur est survenue lors du traitement. Le fichier doit être un PDF de moins de 10 Mo.
+
+status.new = nouvelle
+status.requested = envoyée
+status.received = reçue
+status.declined = déclinée
+status.cancelled = annulée
+
+import.title = Importer des dossiers
+import.intro = Récupérer les dossiers depuis un système amont vers la campagne courante.
+import.runImporter = Lancer
+import.uploadCsv = Téléverser un CSV
+import.csv.help = Colonnes CSV : external_ref, name, url, notes, referee_email, referee_role
+import.success = {0} dossier(s) importés ({1} nouveaux, {2} mis à jour).
+import.noActiveCall = Aucune campagne active n''est configurée.
+
+email.passwordReset.subject = {0} : réinitialisation de mot de passe
+email.passwordReset.body = Vous avez demandé la réinitialisation du mot de passe permettant l''accès\nà {0}.\n\nPour ce faire, veuillez utiliser l''URL suivante :\n\n  {1}\n\nCe lien n''est valable que 48 heures. Passé ce délai, il vous faudra\ndemander un nouveau lien de réinitialisation.\n\nVous pourrez ensuite vous connecter en utilisant votre adresse ({2}).
+
+# Arguments : {0}=candidat·e, {1}=intitulé de la campagne, {2}=nom du site, {3}=URL de soumission, {4}=date limite.
+email.refereeRequest.subject = {1} : demande de recommandation
+email.refereeRequest.body = Bonjour,\n\n{0} vous a indiqué·e comme recommandeur·euse pour sa candidature\nà {1}.\n\nVeuillez utiliser l''URL suivante pour soumettre votre lettre (ou pour\ndécliner cette demande) :\n\n  {3}\n\nNous devons recevoir votre lettre avant le {4}.\n\nMerci d''avance,\n\n-- \n{2}
+
+email.refereeRequest.reminder.subject = {1} : rappel de demande de recommandation
+email.refereeRequest.reminder.body = Bonjour,\n\nCeci est un rappel : {0} vous a indiqué·e comme recommandeur·euse pour\nsa candidature à {1}.\n\nLa date limite est le {4}.\n\nVeuillez utiliser l''URL suivante pour soumettre votre lettre (ou pour\ndécliner cette demande) :\n\n  {3}\n\nMerci d''avance,\n\n-- \n{2}

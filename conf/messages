@@ -1,1 +1,96 @@
+# Default messages (English).
 # https://www.playframework.com/documentation/latest/ScalaI18N
+
+nav.login = Log in
+nav.logout = Log out
+nav.loggedInAs = Logged in as
+
+intro.title = Home
+intro.listRequests = List all referee requests
+intro.addManually = Manually add a referee request
+intro.importDossiers = Import dossiers
+
+login.title = Log in
+login.email = Email
+login.password = Password
+login.submit = Log in
+login.forgot = First login or password forgotten?
+
+initPassword.title = Reset password
+initPassword.submit = Send email
+
+emailSent.title = Password reinitialization
+emailSent.body = If that address is registered, a password reinitialization link has been sent to
+
+resetPassword.title = Set a new password
+resetPassword.titleOk = Password reset
+resetPassword.titleFailed = Password could not be reset
+resetPassword.hello = Hello {0}.
+resetPassword.choose = Please choose a password with at least 8 characters.
+resetPassword.new = New password
+resetPassword.verify = Please retype
+resetPassword.submit = Set password
+passwordReset.ok = Your password has now been reset. You can now
+passwordReset.failed = Your password could not be reset. Please
+passwordReset.tryAgain = try again
+
+requests.title = Referee requests
+requests.dossierName = Dossier name
+requests.dossierDetails = Dossier details
+requests.referee = Referee
+requests.refereeDetails = Referee details
+requests.status = Status
+requests.addManually = Manually add a request
+requests.sendRequests = Send request emails
+requests.sendReminders = Send request email reminders
+
+add.title = Add a new request
+add.dossierName = Name of person being referred
+add.dossierDetails = Optional details on the dossier
+add.dossierUrl = Optional URL of the dossier
+add.refereeEmail = Email address of the referee
+add.refereeDetails = Optional details on the referee
+add.refereeRole = Role of the referee (supervisor, external, …)
+add.submit = Add
+
+submit.title = Submit a referee letter
+submit.intro = is applying for the
+submit.refereeEmail = Email of the referee:
+submit.refereeName = Full name of the referee:
+submit.willing = Are you willing to submit a reference letter?
+submit.yes = yes
+submit.no = no
+submit.letter = Letter (PDF format):
+submit.submit = Submit
+submit.invalidToken = Invalid or expired token.
+submit.alert.noName = Please enter your name.
+submit.alert.noFile = Please select a file to upload.
+submit.received.intro = We have successfully received your
+submit.received.letter = recommendation
+submit.received.decline = wish not to provide a recommendation.
+submit.received.canChange = You can still make changes below if you wish.
+submit.error = An error occurred while processing your submission. Make sure the file is a PDF under 10 MB.
+
+status.new = new
+status.requested = requested
+status.received = received
+status.declined = declined
+status.cancelled = cancelled
+
+import.title = Import dossiers
+import.intro = Pull dossiers from an upstream system into the current call.
+import.runImporter = Run
+import.uploadCsv = Upload CSV
+import.csv.help = CSV columns: external_ref, name, url, notes, referee_email, referee_role
+import.success = Imported {0} dossier(s) ({1} new, {2} updated).
+import.noActiveCall = No active call configured.
+
+email.passwordReset.subject = {0}: password reinitialization
+email.passwordReset.body = You have requested to reset the password needed to access\n{0}.\n\nTo do so, please open the following URL:\n\n  {1}\n\nThis link is only valid for 48 hours. Past this time, you will\nneed to request a new password-reset link.\n\nYou will then be able to log in using your email ({2}).
+
+# Args: {0}=applicant, {1}=call label, {2}=site name, {3}=submission URL, {4}=deadline.
+email.refereeRequest.subject = {1}: referee request
+email.refereeRequest.body = Hello,\n\n{0} has listed you as a referee for their application to\n{1}.\n\nPlease open the following URL to submit your reference (or to\ndecline the request):\n\n  {3}\n\nWe need to receive your letter by {4}.\n\nThank you in advance,\n\n-- \n{2}
+
+email.refereeRequest.reminder.subject = {1}: referee-request reminder
+email.refereeRequest.reminder.body = Hello,\n\nThis is a reminder that {0} has listed you as a referee for their\napplication to {1}.\n\nThe deadline is {4}.\n\nPlease open the following URL to submit your reference (or to\ndecline the request):\n\n  {3}\n\nThank you in advance,\n\n-- \n{2}

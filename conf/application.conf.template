@@ -1,19 +1,85 @@
-play.filters.disabled += "play.filters.csrf.CSRFFilter"
+# Copy this file to conf/application.conf and edit the marked values.
+# Secrets (DB password, mailer password, api_token, HotCRP credentials) live in
+# conf/secrets.conf; see conf/secrets.conf.template.
+
+include "secrets.conf"
+
+# Required: the application key signs the session cookie. Generate with
+# `sbt playGenerateSecret` or `openssl rand -base64 32`. Keep it in secrets.conf
+# in production.
+# play.http.secret.key = "..." # set this in secrets.conf
+
+# CSRF is enabled globally; token-authed referee endpoints and the bearer-authed
+# /api/* routes are exempted via the route-level @nocsrf marker in conf/routes.
+play.filters.enabled += "play.filters.headers.SecurityHeadersFilter"
+play.filters.headers {
+  contentSecurityPolicy = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'"
+  frameOptions = "DENY"
+  xssProtection = "1; mode=block"
+  contentTypeOptions = "nosniff"
+  referrerPolicy = "same-origin"
+  # HSTS only meaningful when served over HTTPS; harmless otherwise.
+  strictTransportSecurity = "max-age=31536000; includeSubDomains"
+}
+
+# Session cookie hardening: defaults are safe for production behind HTTPS.
+# For local development against http://localhost, set play.http.session.secure
+# to false in conf/application.dev.conf or via an env override.
+play.http.session {
+  secure   = true
+  httpOnly = true
+  sameSite = "lax"
+}
+
+# Cap the size of uploaded letters at 10 MiB.
+play.http.parser.maxDiskBuffer    = 10485760
+play.http.parser.maxMemoryBuffer  = 102400
+
+# Play Evolutions: apply schema changes on startup. Set autoApply=false in
+# production if you prefer manual control via the Evolutions web UI.
+play.evolutions {
+  enabled = true
+  db.default {
+    enabled    = true
+    autoApply  = true
+    autoApplyDowns = false
+  }
+}
 
 play.mailer {
-  host = "localhost",
+  host = "localhost"
 }
 
 db {
-  default.driver=org.postgresql.driver
-  default.url = "jdbc:postgresql://localhost/DATABASE"
+  # PostgreSQL (default).
+  default.driver   = "org.postgresql.Driver"
+  default.url      = "jdbc:postgresql://localhost/DATABASE"
   default.username = "USERNAME"
-  default.password = "PASSWORD"
+  # default.password is set in secrets.conf
+
+  # MySQL / MariaDB alternative: comment out the PostgreSQL block above and
+  # uncomment these. Then point conf/evolutions/default/1.sql at 1-mysql.sql.
+  # default.driver   = "org.mariadb.jdbc.Driver"
+  # default.url      = "jdbc:mariadb://localhost/DATABASE"
+  # default.username = "USERNAME"
 }
 
-site_name  = "SITE_NAME"
-site_url   = "SITE_URL"
-main_site_url = "MAIN_SITE_URL"
-email_from = "EMAIL_FROM"
-deadline = "DEADLINE"
-api_token = "API_TOKEN"
+# Branding and content (per-call overrides take precedence; see the `call_`
+# table). These are the global defaults.
+site_name      = "SITE_NAME"
+site_url       = "SITE_URL"
+main_site_url  = "MAIN_SITE_URL"
+email_from     = "EMAIL_FROM"
+
+# Reminder job (POST /sendRequestReminderEmails) configuration. Set the
+# timezone to wherever the committee operates so the "7 days since the
+# request was last touched" clock matches the operator's intuition.
+reminder.timezone = "UTC"
+reminder.days     = 7
+
+# i18n: list of supported languages. The first is the default.
+play.i18n.langs = ["en", "fr"]
+
+# CORS: disabled by default. Enable only if you front the JSON API from a
+# different origin.
+# play.filters.enabled += "play.filters.cors.CORSFilter"

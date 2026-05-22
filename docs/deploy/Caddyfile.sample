@@ -1,0 +1,9 @@
+# Sample Caddy reverse-proxy block. Caddy obtains TLS automatically.
+
+letters.example.org {
+    encode gzip
+    request_body {
+        max_size 11MB
+    }
+    reverse_proxy 127.0.0.1:9000
+}

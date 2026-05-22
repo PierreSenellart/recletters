@@ -1,0 +1,46 @@
+@(importers: Seq[services.imports.DossierImporter], call: Option[Call], flash: Option[String])(
+  implicit active_call: Option[Call], calls: Seq[Call], user: Option[User],
+  config: play.api.Configuration, messages: play.api.i18n.Messages,
+  request: RequestHeader)
+
+@main(messages("import.title")) {
+  @if(flash.isDefined) {
+    <p class="ok">@flash.get</p>
+  }
+
+  @if(call.isEmpty) {
+    <p>@messages("import.noActiveCall")</p>
+  } else {
+    <p>@messages("import.intro")</p>
+    <h2>@call.get.label</h2>
+
+    <h3>Importers</h3>
+    <ul>
+      @for(imp <- importers) {
+        <li>
+          @imp.name @if(imp.name == "csv" || imp.name == "json-api") { (interactive) }
+          @if(imp.name != "csv" && imp.name != "json-api") {
+            @helper.form(action = routes.ImportController.runImporter(imp.name)) {
+              <input type="submit" value="@messages("import.runImporter") @imp.name">
+            }
+          }
+        </li>
+      }
+    </ul>
+
+    <h3>@messages("import.uploadCsv")</h3>
+    <p>@messages("import.csv.help")</p>
+    @helper.form(action = routes.ImportController.uploadCsv(),
+                 Symbol("enctype") -> "multipart/form-data") {
+      <input type="file" name="csv" accept=".csv,text/csv">
+      <input type="submit" value="@messages("import.uploadCsv")">
+    }
+
+    <h3>JSON API</h3>
+    <p>
+      <code>POST /api/dossiers/bulk</code> with
+      <code>Authorization: Bearer &lt;api_token&gt;</code> and a JSON body of
+      shape <code>{"call":"@call.get.slug","dossiers":[...]}</code>.
+    </p>
+  }
+}

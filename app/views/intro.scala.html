@@ -1,10 +1,13 @@
-@()(implicit active_year : Int, years : Seq[Int], user: Option[User], config: play.api.Configuration)
+@()(implicit active_call: Option[Call], calls: Seq[Call], user: Option[User],
+    config: play.api.Configuration, messages: play.api.i18n.Messages,
+    request: RequestHeader)
 
-@main("Home") {
+@main(messages("intro.title")) {
   @if(user.isDefined) {
-  <ul>
-    <li><a href="@routes.RefereeController.list()">List all referee requests</a></li>
-    <li><a href="@routes.RefereeController.showAdd()">Manually add a referee request</a></li>
-  </ul>
+    <ul>
+      <li><a href="@routes.RefereeController.list()">@messages("intro.listRequests")</a></li>
+      <li><a href="@routes.RefereeController.showAdd()">@messages("intro.addManually")</a></li>
+      <li><a href="@routes.ImportController.index()">@messages("intro.importDossiers")</a></li>
+    </ul>
   }
 }

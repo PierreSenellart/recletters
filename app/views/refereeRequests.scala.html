@@ -1,62 +1,57 @@
 @(requests: Seq[RefereeRequest])(
-  implicit active_year: Int,
-  years: Seq[Int],
-  user: Option[User],
-  config: play.api.Configuration
-)
+  implicit active_call: Option[Call], calls: Seq[Call], user: Option[User],
+  config: play.api.Configuration, messages: play.api.i18n.Messages,
+  request: RequestHeader)
 
-@main("Referee requests") {
-<table>
-  <tr>
-    <th>Dossier Name</th>
-    <th>Dossier Details</th>
-    <th>Referee</th>
-    <th>Referee Details</th>
-    <th>Status</th>
-  </tr>
-  @for(r <- requests) {
-  <tr>
-    <td>
-      @if(r.dossier.url) {
-        <a href="@{r.dossier.url}">@{r.dossier.name}</a>
-      } else {
-        @{r.dossier.name}
-      }
-    </td>
-    <td>@{r.dossier.details}</td>
-    <td>@if(r.name) {
-        <a href="mailto:@{r.email}">@{r.name.get}</a>
-      } else {
-        @{r.email}
-      }
-    </td>
-    <td>@{r.details}</td>
-    <td>@if(r.status==RequestStatus.received) {
-          <a href="@routes.RefereeController.getLetter(r.dossier.id,r.email)">received</td>
-        } else {
-          @{r.status}
-        }</td>
-  </tr>
-  }
-</table>
+@main(messages("requests.title")) {
+  <table>
+    <tr>
+      <th>@messages("requests.dossierName")</th>
+      <th>@messages("requests.dossierDetails")</th>
+      <th>@messages("requests.referee")</th>
+      <th>@messages("requests.refereeDetails")</th>
+      <th>@messages("requests.status")</th>
+    </tr>
+    @for(r <- requests) {
+      <tr>
+        <td>
+          @if(r.dossier.url.isDefined) {
+            <a href="@r.dossier.url.get">@r.dossier.name</a>
+          } else {
+            @r.dossier.name
+          }
+        </td>
+        <td>@r.dossier.details.getOrElse("")</td>
+        <td>
+          @if(r.name.isDefined) {
+            <a href="mailto:@r.email">@r.name.get</a>
+          } else {
+            @r.email
+          }
+        </td>
+        <td>@r.details.getOrElse("")</td>
+        <td>
+          @if(r.status == RequestStatus.received) {
+            <a href="@routes.RefereeController.getLetter(r.dossier.id, r.email)">@messages(s"status.${r.status}")</a>
+          } else {
+            @messages(s"status.${r.status}")
+          }
+        </td>
+      </tr>
+    }
+  </table>
 
-  @if(requests.exists(_.status==RequestStatus.news)) {
-    <form action="sendRequestEmails" method="post">
-      <input type="submit" value="Send request emails">
-    </form>
-  }
+  <hr>
 
-<hr>
-
-<div>
-  <form action="@routes.RefereeController.showAdd()">
-    <input type="submit" value="Manually add a request">
-  </form>
-  <form action="@routes.RefereeController.sendRequestEmails()" method="post">
-    <input type="submit" value="Send request emails">
-  </form>
-  <form action="@routes.RefereeController.sendRequestReminderEmails()" method="post">
-    <input type="submit" value="Send request email reminders">
-  </form>
-</div>
+  <div>
+    @helper.form(action = routes.RefereeController.showAdd()) {
+      <input type="submit" value="@messages("requests.addManually")">
+    }
+    @helper.form(action = routes.RefereeController.sendRequestEmails()) {
+      <input type="submit" value="@messages("requests.sendRequests")">
+    }
+    @helper.form(action = routes.RefereeController.sendRequestReminderEmails()) {
+      <input type="submit" value="@messages("requests.sendReminders")">
+    }
+  </div>
 }

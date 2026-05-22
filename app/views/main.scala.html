@@ -1,39 +1,46 @@
-@(title: String,menu:Boolean=true)(content: Html)(
-  implicit active_year : Int, years : Seq[Int], user: Option[User],
-  config: play.api.Configuration)
+@(title: String, menu: Boolean = true)(content: Html)(
+  implicit active_call: Option[Call], calls: Seq[Call], user: Option[User],
+  config: play.api.Configuration, messages: play.api.i18n.Messages,
+  request: RequestHeader)
+
+@callLabel = @{
+  active_call.map(_.label).getOrElse(config.get[String]("site_name"))
+}
 
 <!DOCTYPE html>
-<html lang="en">
-   <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-      <title>@{config.get[String]("site_name")} @active_year Letters — @title</title>
-      <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
-   </head>
-   <body>
-     <form id="year_choice" action="">
-       <select name="year" id="select_year">
-         @for(y <- years.reverse) {
-           <option value="@y" @if(y==active_year) {selected="selected"}>@y</option>
-         }
-       </select>
-     </form>
-     @if(menu) {
-     <p id="user_info">
+<html lang="@messages.lang.code">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>@callLabel: @title</title>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
+  </head>
+  <body>
+    @if(calls.size > 1 && active_call.isDefined) {
+      @helper.form(action = routes.MainController.changeCall(active_call.get.id, request.uri),
+                   Symbol("id") -> "call_choice") {
+        <select name="call" id="select_call" onchange="this.form.submit()">
+          @for(c <- calls) {
+            <option value="@c.id" @if(active_call.exists(_.id == c.id)){selected="selected"}>@c.label</option>
+          }
+        </select>
+      }
+    }
+
+    @if(menu) {
+      <p id="user_info">
         @if(user.isDefined) {
-          Logged in as @user.get.first_name @user.get.last_name (<a
-            href="@routes.AuthController.logout()">Log out</a>)
+          @messages("nav.loggedInAs") @user.get.first_name @user.get.last_name
+          (<a href="@routes.AuthController.logout()">@messages("nav.logout")</a>)
         } else {
-          <a href="@routes.AuthController.login(None)">Log in</a>
+          <a href="@routes.AuthController.login(None)">@messages("nav.login")</a>
         }
       </p>
-     }
-    <script src="@routes.Assets.versioned("scripts/main.js")"></script>
-     <h1>@{config.get[String]("site_name")} @active_year Letters — @title</h1>
-     <div id="main_content">
-       @content
+    }
 
-       @if(menu) {
-        }
+    <script src="@routes.Assets.versioned("scripts/main.js")"></script>
+    <h1>@callLabel: @title</h1>
+    <div id="main_content">
+      @content
     </div>
   </body>
 </html>
