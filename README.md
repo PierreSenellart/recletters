@@ -64,10 +64,6 @@ Evolutions; flavour is selected by the symlink at
 ( cd conf/evolutions/default && ln -sf 1-mysql.sql   1.sql )
 ```
 
-If you are upgrading an existing production database from the legacy
-(year-based, `pgcrypto`, native enum) schema, see
-[`conf/migrate-from-legacy.sql`](conf/migrate-from-legacy.sql).
-
 ## Integration
 
 Dossiers can be loaded via:
