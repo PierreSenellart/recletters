@@ -45,18 +45,18 @@ docker compose exec app-postgres /opt/recletters/bin/recletters \
 
 ## Deployment targets
 
-| Target              | Audience                       | See                    |
-| ------------------- | ------------------------------ | ---------------------- |
-| `sbt run`           | development / contributors     | `docs/develop.md`      |
-| `docker compose up` | evaluation, self-contained dev | this README + `Dockerfile` |
-| `sbt stage`         | traditional Linux installs     | `docs/install.md`      |
-| `.deb` package      | Debian / Ubuntu production     | `docs/install.md`      |
+| Target              | Audience                       | See                                            |
+| ------------------- | ------------------------------ | ---------------------------------------------- |
+| `sbt run`           | development / contributors     | [`docs/develop.md`](docs/develop.md)           |
+| `docker compose up` | evaluation, self-contained dev | this README + [`Dockerfile`](Dockerfile)       |
+| `sbt stage`         | traditional Linux installs     | [`docs/install.md`](docs/install.md)           |
+| `.deb` package      | Debian / Ubuntu production     | [`docs/install.md`](docs/install.md)           |
 
 ## Database
 
-PostgreSQL is the primary supported engine; MySQL ≥ 8 and MariaDB ≥ 10.5 are
-first-class secondaries. Schema is applied by Play Evolutions; flavour is
-selected by the symlink at `conf/evolutions/default/1.sql`:
+PostgreSQL and MySQL/MariaDB are supported. Schema is applied by Play
+Evolutions; flavour is selected by the symlink at
+[`conf/evolutions/default/1.sql`](conf/evolutions/default/1.sql):
 
 ```sh
 # pick a flavour
@@ -65,7 +65,8 @@ selected by the symlink at `conf/evolutions/default/1.sql`:
 ```
 
 If you are upgrading an existing production database from the legacy
-(year-based, `pgcrypto`, native enum) schema, see `conf/migrate-from-legacy.sql`.
+(year-based, `pgcrypto`, native enum) schema, see
+[`conf/migrate-from-legacy.sql`](conf/migrate-from-legacy.sql).
 
 ## Integration
 
@@ -75,11 +76,12 @@ Dossiers can be loaded via:
 - the `/import` UI (CSV upload);
 - the bearer-authed `POST /api/dossiers/bulk` endpoint;
 - the in-app **HotCRP plug-in** (reads a sibling MySQL instance);
-- the companion `tools/hotcrp-import.py` script (cron + bearer).
+- the companion [`tools/hotcrp-import.py`](tools/hotcrp-import.py) script
+  (cron + bearer).
 
-See `docs/integration.md` for the `ImportedDossier` contract and how to write a
-new importer.
+See [`docs/integration.md`](docs/integration.md) for the `ImportedDossier`
+contract and how to write a new importer.
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See [`LICENSE`](LICENSE).
