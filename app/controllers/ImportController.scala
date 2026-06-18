@@ -75,34 +75,42 @@ class ImportController @Inject() (
     * Reply: `{ "created": n, "updated": n, "total": n }`. Idempotent w.r.t.
     * (call_id, external_ref).
     */
-  def apiBulk(): Action[JsValue] = Action(cc.parsers.json) { request =>
-    if (!apiAuth.authorized(request)) Results.Unauthorized
-    else {
-      val payload = request.body
-      val callRef = (payload \ "call").asOpt[JsValue].map {
-        case JsNumber(n) => Left(n.toInt)
-        case JsString(s) => Right(s)
-        case other       => Right(other.toString)
-      }
-      val call: Option[Call] = callRef.flatMap {
-        case Left(id)    => callService.find(id)
-        case Right(slug) => callService.findBySlug(slug)
-      }
-      call match {
-        case None =>
-          Results.NotFound(Json.obj("error" -> "unknown call"))
-        case Some(c) =>
-          val items =
-            (payload \ "dossiers").asOpt[Seq[ImportedDossier]].getOrElse(Seq.empty)
-          val res = imports.applyAll(c, items)
-          Results.Ok(
-            Json.obj(
-              "created" -> res.created,
-              "updated" -> res.updated,
-              "total"   -> res.total
-            )
+  // Check the bearer token in the body-parser stage, before we read or parse
+  // the request body. Play runs the body parser ahead of any action logic, so
+  // gating auth here (rather than inside the action) is what actually keeps an
+  // unauthenticated caller from making us parse a body.
+  private val authedJson: BodyParser[JsValue] =
+    parse.when(
+      apiAuth.authorized,
+      parse.json,
+      _ => scala.concurrent.Future.successful(Results.Unauthorized)
+    )
+
+  def apiBulk(): Action[JsValue] = Action(authedJson) { request =>
+    val payload = request.body
+    val callRef = (payload \ "call").asOpt[JsValue].map {
+      case JsNumber(n) => Left(n.toInt)
+      case JsString(s) => Right(s)
+      case other       => Right(other.toString)
+    }
+    val call: Option[Call] = callRef.flatMap {
+      case Left(id)    => callService.find(id)
+      case Right(slug) => callService.findBySlug(slug)
+    }
+    call match {
+      case None =>
+        Results.NotFound(Json.obj("error" -> "unknown call"))
+      case Some(c) =>
+        val items =
+          (payload \ "dossiers").asOpt[Seq[ImportedDossier]].getOrElse(Seq.empty)
+        val res = imports.applyAll(c, items)
+        Results.Ok(
+          Json.obj(
+            "created" -> res.created,
+            "updated" -> res.updated,
+            "total"   -> res.total
           )
-      }
+        )
     }
   }
 }
