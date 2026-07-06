@@ -332,4 +332,27 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
       contentAsString(second) must include("\"updated\":1")
     }
   }
+
+  // ── /api/import/run/:name (bearer auth) ─────────────────────────────────
+
+  "POST /api/import/run/:name" should {
+    "reject without a bearer token" in {
+      val r = route(app, FakeRequest(POST, "/api/import/run/hotcrp?call=test-call")).get
+      status(r) mustBe UNAUTHORIZED
+    }
+
+    "reject an unknown importer with a valid token" in {
+      val r = route(app, FakeRequest(POST, "/api/import/run/nope?call=test-call")
+        .withHeaders("Authorization" -> "Bearer test-token")
+      ).get
+      status(r) mustBe BAD_REQUEST
+    }
+
+    "404 on an unknown call" in {
+      val r = route(app, FakeRequest(POST, "/api/import/run/hotcrp?call=no-such-call")
+        .withHeaders("Authorization" -> "Bearer test-token")
+      ).get
+      status(r) mustBe NOT_FOUND
+    }
+  }
 }
