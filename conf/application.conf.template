@@ -44,6 +44,10 @@ play.evolutions {
     autoApply  = true
     autoApplyDowns = false
   }
+  # Evolutions manages every configured datasource by default. When the HotCRP
+  # plug-in is enabled it adds a `hotcrp` datasource pointing at HotCRP's own
+  # schema, which recletters must never migrate — keep evolutions off for it.
+  db.hotcrp.enabled = false
 }
 
 play.mailer {
