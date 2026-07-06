@@ -109,6 +109,19 @@ class HotCRPImporterSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAn
             VALUES (43, 1, 'should-not-appear-1@example.org')""".executeUpdate()
       SQL"""INSERT INTO PaperOption(paperId, optionId, data)
             VALUES (44, 1, 'should-not-appear-2@example.org')""".executeUpdate()
+
+      // Submitted paper whose referee fields hold a non-email value and a
+      // whitespace-padded address — the importer must drop the former and
+      // trim the latter.
+      SQL"""INSERT INTO Paper(paperId, title, authorInformation, timeWithdrawn, timeSubmitted)
+            VALUES (46, 'Paper with a junk referee', 'Frank\tExample\tfrank@x\tExampleU', 0, 100)"""
+        .executeUpdate()
+      SQL"""INSERT INTO PaperOption(paperId, optionId, data)
+            VALUES (46, 1, 'valid@example.org')""".executeUpdate()
+      SQL"""INSERT INTO PaperOption(paperId, optionId, data)
+            VALUES (46, 2, 'Not An Email')""".executeUpdate()
+      SQL"""INSERT INTO PaperOption(paperId, optionId, data)
+            VALUES (46, 2, ' leadingspace@example.org')""".executeUpdate()
     }
   }
 
@@ -170,6 +183,16 @@ class HotCRPImporterSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAn
       val results = imp.fetch(callFixture())
       val r45     = results.find(_.externalRef.contains("45")).get
       r45.referees mustBe empty
+    }
+
+    "skip non-email referee values and trim surrounding whitespace" in {
+      assume(hotcrpEnabled, "HotCRP importer not enabled")
+      val imp     = app.injector.instanceOf[HotCRPImporter]
+      val results = imp.fetch(callFixture())
+      val r46     = results.find(_.externalRef.contains("46")).get
+      r46.referees.map(_.email).toSet mustBe Set(
+        "valid@example.org", "leadingspace@example.org"
+      )
     }
   }
 }
