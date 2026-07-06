@@ -15,6 +15,7 @@
 
   @helper.form(action = routes.AuthController.authenticate(),
                Symbol("id") -> "login") {
+    @helper.CSRF.formField
     @helper.inputText(f("email"), Symbol("type") -> "email", Symbol("_label") -> messages("login.email"))
     @helper.inputText(f("path"), Symbol("type") -> "hidden", Symbol("_label") -> "")
     @helper.inputPassword(f("password"), Symbol("_label") -> messages("login.password"))

@@ -21,6 +21,7 @@
           @imp.name @if(imp.name == "csv" || imp.name == "json-api") { (interactive) }
           @if(imp.name != "csv" && imp.name != "json-api") {
             @helper.form(action = routes.ImportController.runImporter(imp.name)) {
+              @helper.CSRF.formField
               <input type="submit" value="@messages("import.runImporter") @imp.name">
             }
           }
@@ -32,6 +33,7 @@
     <p>@messages("import.csv.help")</p>
     @helper.form(action = routes.ImportController.uploadCsv(),
                  Symbol("enctype") -> "multipart/form-data") {
+      @helper.CSRF.formField
       <input type="file" name="csv" accept=".csv,text/csv">
       <input type="submit" value="@messages("import.uploadCsv")">
     }

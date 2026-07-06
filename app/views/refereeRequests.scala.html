@@ -45,12 +45,15 @@
 
   <div>
     @helper.form(action = routes.RefereeController.showAdd()) {
+      @helper.CSRF.formField
       <input type="submit" value="@messages("requests.addManually")">
     }
     @helper.form(action = routes.RefereeController.sendRequestEmails()) {
+      @helper.CSRF.formField
       <input type="submit" value="@messages("requests.sendRequests")">
     }
     @helper.form(action = routes.RefereeController.sendRequestReminderEmails()) {
+      @helper.CSRF.formField
       <input type="submit" value="@messages("requests.sendReminders")">
     }
   </div>

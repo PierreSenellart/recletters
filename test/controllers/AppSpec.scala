@@ -102,6 +102,49 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
     }
   }
 
+  // ── CSRF protection ──────────────────────────────────────────────────────
+  // Regression guard: the forms shipped without a CSRF token while the filter
+  // was enabled, so any browser carrying a cookie (e.g. from a sibling app on
+  // the same host) had its POSTs rejected with 403. The rendered form must
+  // embed the token, and the endpoint must still enforce it when a cookie is
+  // present. (The plain POST tests above pass only because a cookie-less
+  // FakeRequest bypasses the CSRF check.)
+
+  "the login form" should {
+    "embed a CSRF token field" in {
+      val r = route(app, FakeRequest(GET, "/login")).get
+      status(r) mustBe OK
+      contentAsString(r) must include("csrfToken")
+    }
+  }
+
+  "POST /authenticate under CSRF enforcement" should {
+    import play.api.test.CSRFTokenHelper._
+
+    "reject a cookie-bearing request that carries no token (403)" in {
+      val r = route(app,
+        FakeRequest(POST, "/authenticate")
+          .withSession("_" -> "_") // a session cookie switches on CSRF enforcement
+          .withFormUrlEncodedBody(
+            "email" -> "admin@test.local", "password" -> "admin", "path" -> ""
+          )
+      ).get
+      status(r) mustBe FORBIDDEN
+    }
+
+    "accept a request that carries a valid token" in {
+      val r = route(app,
+        FakeRequest(POST, "/authenticate")
+          .withFormUrlEncodedBody(
+            "email" -> "admin@test.local", "password" -> "admin", "path" -> ""
+          )
+          .withCSRFToken
+      ).get
+      status(r) mustBe SEE_OTHER
+      session(r).get("userid") must be(defined)
+    }
+  }
+
   // ── Password-reset email enumeration ────────────────────────────────────
 
   "POST /init_password" should {

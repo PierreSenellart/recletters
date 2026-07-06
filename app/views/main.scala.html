@@ -18,6 +18,7 @@
     @if(calls.size > 1 && active_call.isDefined) {
       @helper.form(action = routes.MainController.changeCall(active_call.get.id, request.uri),
                    Symbol("id") -> "call_choice") {
+        @helper.CSRF.formField
         <select name="call" id="select_call" onchange="this.form.submit()">
           @for(c <- calls) {
             <option value="@c.id" @if(active_call.exists(_.id == c.id)){selected="selected"}>@c.label</option>
