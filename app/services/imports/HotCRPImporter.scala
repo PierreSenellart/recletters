@@ -70,12 +70,14 @@ class HotCRPImporter @Inject() (
         name        = primaryAuthorName(p.authors),
         url         = None,
         notes       = Some(p.title),
-        referees = refByPaper.getOrElse(p.paperId, Nil).map { r =>
-          ImportedReferee(
-            email = r.email,
-            role  = mapping.get(r.optionId),
-            notes = None
-          )
+        referees = refByPaper.getOrElse(p.paperId, Nil).flatMap { r =>
+          // HotCRP text options hold arbitrary text; a candidate can type a
+          // non-email into a referee field. Trim and keep only values that look
+          // like an address, so we never create a broken referee request.
+          val email = r.email.trim
+          if (email.contains("@"))
+            Some(ImportedReferee(email, mapping.get(r.optionId), None))
+          else None
         }
       )
     }
