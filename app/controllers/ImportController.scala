@@ -113,4 +113,23 @@ class ImportController @Inject() (
         )
     }
   }
+
+  /** Headless trigger for a server-side importer (e.g. the in-app HotCRP
+    * plug-in), bearer-authed for cron. `call` is a slug or numeric id.
+    */
+  def apiRunImporter(name: String, call: String): Action[AnyContent] = apiAuth {
+    _ =>
+      val target =
+        call.toIntOption.flatMap(callService.find).orElse(callService.findBySlug(call))
+      target match {
+        case None => NotFound(s"Unknown call: $call\n")
+        case Some(c) =>
+          imports.run(name, c) match {
+            case Right(res) =>
+              Ok(s"$name: ${res.total} (${res.created} new, ${res.updated} updated)\n")
+            case Left(err) =>
+              BadRequest(s"$err\n")
+          }
+      }
+  }
 }

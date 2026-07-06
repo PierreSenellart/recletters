@@ -37,6 +37,8 @@ POST /api/sendRequestEmails         controllers.RefereeController.apiSendRequest
 POST /api/sendRequestReminderEmails controllers.RefereeController.apiSendRequestReminderEmails(call: String)
 + nocsrf
 POST /api/dossiers/bulk             controllers.ImportController.apiBulk()
++ nocsrf
+POST /api/import/run/:name          controllers.ImportController.apiRunImporter(name: String, call: String)
 
 # Importer UI for committee members (session-authed, CSRF on).
 GET  /import                        controllers.ImportController.index()

@@ -94,7 +94,19 @@ importers.hotcrp.option-mapping {
 }
 ```
 
-Committee users then run the importer from `/import`.
+Committee users then run the importer from `/import`. To drive it headlessly
+(e.g. from cron), the same in-app importer is exposed as a bearer-authed
+endpoint:
+
+```sh
+curl -X POST -H "Authorization: Bearer $RECLETTERS_TOKEN" \
+     "https://letters.example.org/api/import/run/hotcrp?call=award-2026"
+```
+
+`call` is the call slug or numeric id. Pair it with
+`POST /api/sendRequestEmails?call=…` to import and notify referees on a
+schedule. Unlike the companion script below, this reuses the credentials in
+`secrets.conf` — no need to duplicate the HotCRP connection anywhere.
 
 ### Companion script (cron + bearer)
 
