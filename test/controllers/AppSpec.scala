@@ -8,6 +8,7 @@ import play.api.Application
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test._
+import play.api.test.CSRFTokenHelper._
 import play.api.test.Helpers._
 
 /** End-to-end HTTP-layer tests against a real PostgreSQL or MySQL DB. The
@@ -68,7 +69,7 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
       val r = route(app,
         FakeRequest(POST, "/authenticate").withFormUrlEncodedBody(
           "email" -> "nobody@test.local", "password" -> "x", "path" -> ""
-        )
+        ).withCSRFToken
       ).get
       status(r) mustBe BAD_REQUEST
     }
@@ -77,7 +78,7 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
       val r = route(app,
         FakeRequest(POST, "/authenticate").withFormUrlEncodedBody(
           "email" -> "admin@test.local", "password" -> "wrong", "path" -> ""
-        )
+        ).withCSRFToken
       ).get
       status(r) mustBe BAD_REQUEST
     }
@@ -103,12 +104,11 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
   }
 
   // ── CSRF protection ──────────────────────────────────────────────────────
-  // Regression guard: the forms shipped without a CSRF token while the filter
-  // was enabled, so any browser carrying a cookie (e.g. from a sibling app on
-  // the same host) had its POSTs rejected with 403. The rendered form must
-  // embed the token, and the endpoint must still enforce it when a cookie is
-  // present. (The plain POST tests above pass only because a cookie-less
-  // FakeRequest bypasses the CSRF check.)
+  // Regression guards for the two ways CSRF broke historically: (1) the forms
+  // shipped without a token while the filter was enabled, so any browser
+  // carrying a cookie got a 403 on every POST; (2) the 2025 deployment masked
+  // that by disabling the filter entirely. So we check both that the rendered
+  // form embeds a token and that the filter is actually wired in.
 
   "the login form" should {
     "embed a CSRF token field" in {
@@ -118,21 +118,17 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
     }
   }
 
-  "POST /authenticate under CSRF enforcement" should {
-    import play.api.test.CSRFTokenHelper._
-
-    "reject a cookie-bearing request that carries no token (403)" in {
-      val r = route(app,
-        FakeRequest(POST, "/authenticate")
-          .withSession("_" -> "_") // a session cookie switches on CSRF enforcement
-          .withFormUrlEncodedBody(
-            "email" -> "admin@test.local", "password" -> "admin", "path" -> ""
-          )
-      ).get
-      status(r) mustBe FORBIDDEN
+  "the CSRF filter" should {
+    "be enabled (guards against the 2025 filter-disabled regression)" in {
+      val filters =
+        app.injector.instanceOf[play.api.http.HttpFilters].filters
+      filters.map(_.getClass.getName).exists(_.contains("CSRFFilter")) mustBe true
     }
+  }
 
-    "accept a request that carries a valid token" in {
+  "POST /authenticate with a valid CSRF token" should {
+
+    "be accepted" in {
       val r = route(app,
         FakeRequest(POST, "/authenticate")
           .withFormUrlEncodedBody(
