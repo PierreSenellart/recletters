@@ -69,3 +69,13 @@ packageSummary := "Recommendation-letter collection web app"
 packageDescription := "Play/Scala web application for soliciting and collecting recommendation letters from referees."
 debianPackageDependencies := Seq("java21-runtime-headless | java17-runtime-headless")
 debianPackageRecommends := Seq("postgresql", "nginx")
+
+// Never package site-specific config. application.conf and secrets.conf are
+// hand-maintained on each server (created from the shipped *.template files);
+// if a build machine happened to have local copies, packaging them would let
+// them overwrite — or, once in the manifest, let a later install remove — a
+// server's real config. Only the *.template files ship; the live files stay
+// outside dpkg's control.
+Universal / mappings := (Universal / mappings).value.filterNot { case (_, path) =>
+  path.endsWith("conf/application.conf") || path.endsWith("conf/secrets.conf")
+}
