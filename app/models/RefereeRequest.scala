@@ -90,7 +90,16 @@ case class RefereeRequest(
     name: Option[String],
     status: RequestStatus.RequestStatus,
     status_update: ZonedDateTime
-)
+) {
+
+  /** Date shown in the requests table: the last meaningful event on the row —
+    * when the request was sent (for 'requested', since generateToken now stamps
+    * status_update on send) or when the referee acted (received/declined). None
+    * for a 'new' row that was never sent.
+    */
+  def actionDate: Option[ZonedDateTime] =
+    if (status == RequestStatus.news) None else Some(status_update)
+}
 
 object RefereeRequestService {
   implicit val dossierParser: RowParser[Dossier] = DossierService.parser()
@@ -222,7 +231,10 @@ class RefereeRequestService @Inject() (db: Database) {
       SQL"""INSERT INTO referee_token(dossier, email, token_hash, expires_at)
             VALUES (${r.dossier.id}, ${r.email}, $hash, $expiresAt)"""
         .executeUpdate()
-      SQL"""UPDATE referee_request SET status='requested'
+      // Stamp status_update on send so it holds the (most recent) sent date for
+      // a 'requested' row — not the row's import time. This makes status_update
+      // the single meaningful timestamp across all statuses.
+      SQL"""UPDATE referee_request SET status='requested', status_update=NOW()
             WHERE dossier=${r.dossier.id} AND email=${r.email}"""
         .executeUpdate()
     }
