@@ -22,7 +22,10 @@ case "$ENGINE" in
   pg|postgres|postgresql)
     psql -d postgres -c "DROP DATABASE IF EXISTS $DB;" >/dev/null
     psql -d postgres -c "CREATE DATABASE $DB;"         >/dev/null
-    ln -sf 1-postgres.sql "$ROOT/conf/evolutions/default/1.sql"
+    for f in "$ROOT"/conf/evolutions/default/*-postgres.sql; do
+      b=$(basename "$f")
+      ln -sf "$b" "$ROOT/conf/evolutions/default/${b%-postgres.sql}.sql"
+    done
     echo "PostgreSQL test DB '$DB' ready."
     ;;
   mysql|mariadb)
@@ -33,7 +36,10 @@ case "$ENGINE" in
     # there. Play Evolutions does not touch this DB (see conf/test-mysql.conf).
     mysql -e "DROP DATABASE IF EXISTS hotcrp_test;"
     mysql -e "CREATE DATABASE hotcrp_test CHARACTER SET utf8mb4;"
-    ln -sf 1-mysql.sql "$ROOT/conf/evolutions/default/1.sql"
+    for f in "$ROOT"/conf/evolutions/default/*-mysql.sql; do
+      b=$(basename "$f")
+      ln -sf "$b" "$ROOT/conf/evolutions/default/${b%-mysql.sql}.sql"
+    done
     echo "MySQL test DB '$DB' and 'hotcrp_test' ready."
     ;;
   *)
