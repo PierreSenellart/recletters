@@ -9,6 +9,7 @@
       <th>@messages("requests.dossierName")</th>
       <th>@messages("requests.dossierDetails")</th>
       <th>@messages("requests.referee")</th>
+      <th>@messages("requests.refereeRole")</th>
       <th>@messages("requests.refereeDetails")</th>
       <th>@messages("requests.status")</th>
     </tr>
@@ -29,6 +30,7 @@
             @r.email
           }
         </td>
+        <td>@r.role.getOrElse("")</td>
         <td>@r.details.getOrElse("")</td>
         <td>
           @if(r.status == RequestStatus.received) {

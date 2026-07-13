@@ -37,6 +37,7 @@ requests.title = Demandes de recommandation
 requests.dossierName = Nom du dossier
 requests.dossierDetails = Détails du dossier
 requests.referee = Recommandeur·euse
+requests.refereeRole = Rôle du·de la recommandeur·euse
 requests.refereeDetails = Détails sur la recommandation
 requests.status = Statut
 requests.addManually = Ajouter manuellement une demande
