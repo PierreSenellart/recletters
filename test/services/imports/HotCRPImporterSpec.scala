@@ -27,6 +27,7 @@ class HotCRPImporterSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAn
     val resource = sys.props.getOrElse("config.resource", "test.conf")
     GuiceApplicationBuilder()
       .configure(Configuration(ConfigFactory.load(resource)))
+      .configure("importers.hotcrp.paper-url" -> "https://hotcrp.example.org/paper/{id}")
       .build()
   }
 
@@ -154,6 +155,14 @@ class HotCRPImporterSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAn
       val r42     = results.find(_.externalRef.contains("42")).get
       r42.name mustBe "Alice Example"
       r42.notes mustBe Some("A submitted paper")
+    }
+
+    "set the dossier url from the paper-url template (with {id} substituted)" in {
+      assume(hotcrpEnabled, "HotCRP importer not enabled")
+      val imp     = app.injector.instanceOf[HotCRPImporter]
+      val results = imp.fetch(callFixture())
+      val r42     = results.find(_.externalRef.contains("42")).get
+      r42.url mustBe Some("https://hotcrp.example.org/paper/42")
     }
 
     "map PaperOption.optionId to the configured role" in {
