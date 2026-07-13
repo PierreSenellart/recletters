@@ -88,9 +88,10 @@ import.noActiveCall = No active call configured.
 email.passwordReset.subject = {0}: password reinitialization
 email.passwordReset.body = You have requested to reset the password needed to access\n{0}.\n\nTo do so, please open the following URL:\n\n  {1}\n\nThis link is only valid for 48 hours. Past this time, you will\nneed to request a new password-reset link.\n\nYou will then be able to log in using your email ({2}).
 
-# Args: {0}=applicant, {1}=call label, {2}=site name, {3}=submission URL, {4}=deadline.
-email.refereeRequest.subject = {1}: referee request
+# Subject args: {0}=call label.
+# Body args:    {0}=applicant, {1}=call label, {2}=site name, {3}=submission URL, {4}=deadline.
+email.refereeRequest.subject = {0}: referee request
 email.refereeRequest.body = Hello,\n\n{0} has listed you as a referee for their application to\n{1}.\n\nPlease open the following URL to submit your reference (or to\ndecline the request):\n\n  {3}\n\nWe need to receive your letter by {4}.\n\nThank you in advance,\n\n-- \n{2}
 
-email.refereeRequest.reminder.subject = {1}: referee-request reminder
+email.refereeRequest.reminder.subject = {0}: referee-request reminder
 email.refereeRequest.reminder.body = Hello,\n\nThis is a reminder that {0} has listed you as a referee for their\napplication to {1}.\n\nThe deadline is {4}.\n\nPlease open the following URL to submit your reference (or to\ndecline the request):\n\n  {3}\n\nThank you in advance,\n\n-- \n{2}
