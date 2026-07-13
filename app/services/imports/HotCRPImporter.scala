@@ -1,5 +1,6 @@
 package services.imports
 
+import java.nio.charset.StandardCharsets.UTF_8
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.db.DBApi
@@ -45,12 +46,16 @@ class HotCRPImporter @Inject() (
     case class PaperRow(paperId: Int, title: String, authors: String)
     case class OptionRow(paperId: Int, optionId: Int, email: String)
 
+    // HotCRP stores its text columns as VARBINARY (title, authorInformation,
+    // PaperOption.data), so the JDBC driver hands them back as byte[]. Read
+    // them as Array[Byte] and decode UTF-8 rather than str(...), which would
+    // throw TypeDoesNotMatch on the raw bytes.
     val papers = db.withConnection { implicit c =>
       SQL"""SELECT paperId, title, authorInformation
             FROM Paper
             WHERE timeWithdrawn = 0 AND timeSubmitted > 0"""
-        .as((int("paperId") ~ str("title") ~ str("authorInformation")).map {
-          case p ~ t ~ a => PaperRow(p, t, a)
+        .as((int("paperId") ~ byteArray("title").? ~ byteArray("authorInformation").?).map {
+          case p ~ t ~ a => PaperRow(p, utf8(t), utf8(a))
         }.*)
     }
 
@@ -58,8 +63,8 @@ class HotCRPImporter @Inject() (
       SQL"""SELECT paperId, optionId, data
             FROM PaperOption
             WHERE optionId IN (${mapping.keys.toSeq})"""
-        .as((int("paperId") ~ int("optionId") ~ str("data")).map {
-          case p ~ o ~ d => OptionRow(p, o, d)
+        .as((int("paperId") ~ int("optionId") ~ byteArray("data").?).map {
+          case p ~ o ~ d => OptionRow(p, o, utf8(d))
         }.*)
     }
 
@@ -82,6 +87,10 @@ class HotCRPImporter @Inject() (
       )
     }
   }
+
+  /** Decode a nullable VARBINARY column to a UTF-8 string (NULL → ""). */
+  private def utf8(bytes: Option[Array[Byte]]): String =
+    bytes.map(new String(_, UTF_8)).getOrElse("")
 
   /** HotCRP stores authorInformation as a tab-delimited blob:
     * `first\tlast\temail\taffiliation\n` per author. We use the first author.
