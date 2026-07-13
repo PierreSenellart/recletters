@@ -35,11 +35,11 @@ passwordReset.failed = Your password could not be reset. Please
 passwordReset.tryAgain = try again
 
 requests.title = Referee requests
-requests.dossierName = Dossier name
-requests.dossierDetails = Dossier details
+requests.dossierName = Name
+requests.dossierDetails = Dossier
 requests.referee = Referee
-requests.refereeRole = Referee role
-requests.refereeDetails = Referee details
+requests.refereeRole = Role
+requests.refereeDetails = Details
 requests.status = Status
 requests.addManually = Manually add a request
 requests.sendRequests = Send request emails
