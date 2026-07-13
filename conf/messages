@@ -40,6 +40,7 @@ requests.dossierDetails = Dossier
 requests.referee = Referee
 requests.refereeRole = Role
 requests.refereeDetails = Details
+requests.date = Date
 requests.status = Status
 requests.addManually = Manually add a request
 requests.sendRequests = Send request emails

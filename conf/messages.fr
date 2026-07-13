@@ -39,6 +39,7 @@ requests.dossierDetails = Dossier
 requests.referee = Recommandeur·euse
 requests.refereeRole = Rôle
 requests.refereeDetails = Détails
+requests.date = Date
 requests.status = Statut
 requests.addManually = Ajouter manuellement une demande
 requests.sendRequests = Envoyer les courriels de demande
