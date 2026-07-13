@@ -56,17 +56,20 @@ class HotCRPImporterSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAn
     hotcrp.withConnection { implicit c =>
       SQL"DROP TABLE IF EXISTS PaperOption".executeUpdate()
       SQL"DROP TABLE IF EXISTS Paper".executeUpdate()
+      // Column types mirror the real HotCRP schema: its text columns are
+      // VARBINARY, so the JDBC driver returns byte[]. Using VARCHAR here would
+      // hide the byte->String decoding the importer must do.
       SQL"""CREATE TABLE Paper (
-              paperId           INT          NOT NULL PRIMARY KEY,
-              title             VARCHAR(255) NOT NULL,
-              authorInformation TEXT         NOT NULL,
-              timeWithdrawn     INT          NOT NULL DEFAULT 0,
-              timeSubmitted     INT          NOT NULL DEFAULT 0
+              paperId           INT            NOT NULL PRIMARY KEY,
+              title             VARBINARY(512)  NOT NULL,
+              authorInformation VARBINARY(8192) NOT NULL,
+              timeWithdrawn     BIGINT         NOT NULL DEFAULT 0,
+              timeSubmitted     BIGINT         NOT NULL DEFAULT 0
             )""".executeUpdate()
       SQL"""CREATE TABLE PaperOption (
-              paperId   INT          NOT NULL,
-              optionId  INT          NOT NULL,
-              data      VARCHAR(255) NOT NULL,
+              paperId   INT            NOT NULL,
+              optionId  INT            NOT NULL,
+              data      VARBINARY(255) NOT NULL,
               PRIMARY KEY (paperId, optionId, data)
             )""".executeUpdate()
 
