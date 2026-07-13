@@ -19,6 +19,14 @@ class MailerService @Inject() (
   private val globalSite: String = config.get[String]("site_name")
   private val globalFrom: String = config.get[String]("email_from")
 
+  /** Optional blind-copy address for referee-facing mail, so the committee
+    * keeps an archive of what went out (the SMTP log is metadata-only and
+    * short-lived). Empty/unset disables it. Password mails are never Bcc'd —
+    * they carry reset links.
+    */
+  private val bcc: Seq[String] =
+    config.getOptional[String]("email_bcc").map(_.trim).filter(_.nonEmpty).toSeq
+
   private def lang: Lang = langs.preferred(langs.availables)
 
   private def msgs                       = messagesApi.preferred(Seq(lang))
@@ -53,7 +61,7 @@ class MailerService @Inject() (
     val subject  = msgs("email.refereeRequest.subject", call.label)
     val body     = msgs("email.refereeRequest.body", applicant, call.label, s, url, deadline)
     mailerClient.send(
-      Email(subject = subject, from = from(Some(call)), to = Seq(to), bodyText = Some(body))
+      Email(subject = subject, from = from(Some(call)), to = Seq(to), bcc = bcc, bodyText = Some(body))
     )
   }
 
@@ -76,7 +84,7 @@ class MailerService @Inject() (
       deadline
     )
     mailerClient.send(
-      Email(subject = subject, from = from(Some(call)), to = Seq(to), bodyText = Some(body))
+      Email(subject = subject, from = from(Some(call)), to = Seq(to), bcc = bcc, bodyText = Some(body))
     )
   }
 }

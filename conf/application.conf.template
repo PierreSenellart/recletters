@@ -75,6 +75,12 @@ site_url       = "SITE_URL"
 main_site_url  = "MAIN_SITE_URL"
 email_from     = "EMAIL_FROM"
 
+# Optional blind copy of referee-facing mail (requests + reminders), giving the
+# committee a durable archive of what was sent — the SMTP log records only
+# envelope metadata and is short-lived. Password-reset mails are never Bcc'd.
+# Leave unset/empty to disable.
+# email_bcc    = "committee@example.org"
+
 # Reminder job (POST /sendRequestReminderEmails) configuration. Set the
 # timezone to wherever the committee operates so the "7 days since the
 # request was last touched" clock matches the operator's intuition.
