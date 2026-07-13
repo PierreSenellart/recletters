@@ -34,11 +34,11 @@ passwordReset.failed = Votre mot de passe n''a pas pu être réinitialisé. Veui
 passwordReset.tryAgain = recommencer
 
 requests.title = Demandes de recommandation
-requests.dossierName = Nom du dossier
-requests.dossierDetails = Détails du dossier
+requests.dossierName = Nom
+requests.dossierDetails = Dossier
 requests.referee = Recommandeur·euse
-requests.refereeRole = Rôle du·de la recommandeur·euse
-requests.refereeDetails = Détails sur la recommandation
+requests.refereeRole = Rôle
+requests.refereeDetails = Détails
 requests.status = Statut
 requests.addManually = Ajouter manuellement une demande
 requests.sendRequests = Envoyer les courriels de demande
