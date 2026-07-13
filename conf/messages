@@ -38,6 +38,7 @@ requests.title = Referee requests
 requests.dossierName = Dossier name
 requests.dossierDetails = Dossier details
 requests.referee = Referee
+requests.refereeRole = Referee role
 requests.refereeDetails = Referee details
 requests.status = Status
 requests.addManually = Manually add a request
