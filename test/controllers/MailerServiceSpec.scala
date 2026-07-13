@@ -75,6 +75,22 @@ class MailerServiceSpec extends PlaySpec with GuiceOneAppPerSuite {
       mailer.sent.head.to  mustBe Seq("ref@test.local")
     }
 
+    "render the call label into the subject with no leftover placeholder" in {
+      val (svc, mailer) = service(None)
+      svc.sendRefereeRequest(callFixture, "Alice", "ref@test.local", "tok")
+      val subject = mailer.sent.head.subject
+      subject must include ("Test Call")
+      subject must not include "{"
+    }
+
+    "render the call label into the reminder subject too" in {
+      val (svc, mailer) = service(None)
+      svc.sendRefereeRequestReminder(callFixture, "Alice", "ref@test.local", "tok")
+      val subject = mailer.sent.head.subject
+      subject must include ("Test Call")
+      subject must not include "{"
+    }
+
     "Bcc referee reminders when email_bcc is configured" in {
       val (svc, mailer) = service(Some("copy@test.local"))
       svc.sendRefereeRequestReminder(callFixture, "Alice", "ref@test.local", "tok")
