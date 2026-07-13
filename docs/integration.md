@@ -99,6 +99,11 @@ importers.hotcrp.option-mapping {
 importers.hotcrp.paper-url = "https://host/prix/paper/{id}"
 ```
 
+Only `db.hotcrp.password` is genuinely secret; the rest of the block above is
+non-secret and can just as well live in `application.conf` (that is where the
+shipped `application.conf.template` documents `importers.hotcrp.paper-url`). The
+two files are merged at load time, so placement is a matter of convention.
+
 Committee users then run the importer from `/import`. To drive it headlessly
 (e.g. from cron), the same in-app importer is exposed as a bearer-authed
 endpoint:
