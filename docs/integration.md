@@ -92,6 +92,11 @@ importers.hotcrp.option-mapping {
   6  = "external"
   24 = "industry"
 }
+
+# Optional: link each imported dossier back to its HotCRP paper. The dossier
+# name in the requests list becomes a link to this URL, with `{id}` replaced by
+# the HotCRP paperId. Unset leaves dossiers link-less.
+importers.hotcrp.paper-url = "https://host/prix/paper/{id}"
 ```
 
 Committee users then run the importer from `/import`. To drive it headlessly

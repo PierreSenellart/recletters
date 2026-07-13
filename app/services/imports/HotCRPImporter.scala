@@ -38,9 +38,16 @@ class HotCRPImporter @Inject() (
       }.toMap)
       .getOrElse(Map.empty)
 
+  /** Optional link back to the HotCRP paper, shown on the dossier name in the
+    * requests list. A template with an `{id}` placeholder, e.g.
+    * "https://host/prix/paper/{id}"; unset leaves the dossier link-less. */
+  private def paperUrlTemplate: Option[String] =
+    config.getOptional[String]("importers.hotcrp.paper-url").map(_.trim).filter(_.nonEmpty)
+
   def fetch(call: Call): Seq[ImportedDossier] = {
     if (!isEnabled) return Seq.empty
     val mapping = optionMapping
+    val urlTmpl = paperUrlTemplate
     val db      = dbApi.database("hotcrp")
 
     case class PaperRow(paperId: Int, title: String, authors: String)
@@ -73,7 +80,7 @@ class HotCRPImporter @Inject() (
       ImportedDossier(
         externalRef = Some(p.paperId.toString),
         name        = primaryAuthorName(p.authors),
-        url         = None,
+        url         = urlTmpl.map(_.replace("{id}", p.paperId.toString)),
         notes       = Some(p.title),
         referees = refByPaper.getOrElse(p.paperId, Nil).flatMap { r =>
           // HotCRP text options hold arbitrary text; a candidate can type a
