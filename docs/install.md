@@ -23,17 +23,9 @@ Both engines are first-class. The picking criteria:
   recletters and HotCRP in the same instance and run the in-app HotCRP
   importer against a sibling schema.
 
-After picking, switch the active Evolutions flavour:
-
-```sh
-cd conf/evolutions/default
-ln -sf 1-postgres.sql 1.sql       # PostgreSQL
-# or
-ln -sf 1-mysql.sql    1.sql       # MySQL / MariaDB
-```
-
-This must be done **before** the first start so Play Evolutions sees the right
-file.
+No further action is needed to pick the Evolutions flavour: the right SQL
+(`<n>-postgres.sql` or `<n>-mysql.sql`) is selected at startup from the JDBC
+driver you set in `db.default.driver`.
 
 ## Path A: Docker (evaluation)
 

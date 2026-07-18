@@ -13,18 +13,16 @@
 git clone https://github.com/<your-fork>/recletters.git
 cd recletters
 
-# 1. Pick a DB flavour (defaults to PostgreSQL).
-( cd conf/evolutions/default && ln -sf 1-postgres.sql 1.sql )
-
-# 2. Config.
+# 1. Config. The Evolutions flavour is chosen automatically from
+#    db.default.driver — no symlink to set.
 cp conf/application.conf.template conf/application.conf
 cp conf/secrets.conf.template     conf/secrets.conf
 $EDITOR conf/application.conf conf/secrets.conf
 
-# 3. Create the DB.
+# 2. Create the DB.
 createdb recletters_dev    # or `mysql -e 'CREATE DATABASE recletters_dev;'`
 
-# 4. Start. Play Evolutions auto-applies on first request.
+# 3. Start. Play Evolutions auto-applies on first request.
 sbt run
 ```
 
@@ -41,10 +39,11 @@ make test-mysql      # MySQL / MariaDB via socket auth
 make test-all        # both, back-to-back
 ```
 
-Each target (re)creates a `recletters_test` database, flips the
-Evolutions symlink to the right flavour, then runs `sbt test` with the
-matching `-Dconfig.resource=test.conf` / `test-mysql.conf`. Tests fork the
-JVM so the system property reaches the test classpath (see `build.sbt`).
+Each target (re)creates a `recletters_test` database, then runs `sbt test`
+with the matching `-Dconfig.resource=test.conf` / `test-mysql.conf`. The
+Evolutions flavour follows `db.default.driver` in that config, so nothing
+needs flipping. Tests fork the JVM so the system property reaches the test
+classpath (see `build.sbt`).
 
 ### Database prerequisites
 
@@ -96,9 +95,11 @@ UI and email strings live in `conf/messages` (English) and `conf/messages.fr`
   for [scala/scala3#2335](https://github.com/scala/scala3/issues/2335).
 - **Anorm `PrefixNaming`**: joined queries alias columns as `prefix.field`;
   the row parser uses `Macro.namedParser[T](new PrefixNaming(prefix))`.
-- **Per-DBMS Evolutions**: `conf/evolutions/default/1.sql` is a symlink to
-  either `1-postgres.sql` or `1-mysql.sql`. Make sure both flavours change
-  together when you add a new evolution.
+- **Per-DBMS Evolutions**: each evolution ships as both `<n>-postgres.sql` and
+  `<n>-mysql.sql`; `modules.FlavoredEvolutionsReader` picks one at runtime from
+  `db.default.driver` (wired in via `conf/reference.conf`). There is no
+  `<n>.sql` symlink — just keep the two flavours in step when you add an
+  evolution.
 - **Twirl Call shadowing**: `models.Call` is imported into templates after
   `play.api.mvc.{Call => _, _}` so it shadows the mvc reverse-routing class.
   See `build.sbt`.
