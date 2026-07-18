@@ -56,7 +56,7 @@ add.submit = Ajouter
 
 submit.title = Soumettre une lettre de recommandation
 submit.intro.before = Vous avez été sollicité·e pour fournir une lettre de recommandation pour
-submit.intro.after = , qui postule auprès du
+submit.intro.after = , qui candidate au
 submit.refereeEmail = Votre adresse (en tant que recommandeur·euse) :
 submit.refereeName = Votre nom complet (en tant que recommandeur·euse) :
 submit.willing = Acceptez-vous de soumettre une lettre de recommandation ?
