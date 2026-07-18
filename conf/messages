@@ -56,9 +56,10 @@ add.refereeRole = Role of the referee (supervisor, external, …)
 add.submit = Add
 
 submit.title = Submit a referee letter
-submit.intro = is applying for the
-submit.refereeEmail = Email of the referee:
-submit.refereeName = Full name of the referee:
+submit.intro.before = You have been asked to provide a reference letter for
+submit.intro.after = , who is applying to the
+submit.refereeEmail = Your email (as referee):
+submit.refereeName = Your full name (as referee):
 submit.willing = Are you willing to submit a reference letter?
 submit.yes = yes
 submit.no = no
