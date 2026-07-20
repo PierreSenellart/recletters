@@ -68,3 +68,38 @@ selector. Archived calls remain accessible via the URL if the id is known.
 Edit `api_token` in `/etc/recletters/secrets.conf` and restart the service.
 Any cron-driven importers (e.g. the HotCRP companion script) must be updated
 at the same time.
+
+## Recovering after a reboot (stale `RUNNING_PID`)
+
+Symptom: every request returns **503** (the reverse proxy has no backend), and
+the service crash-loops. `journalctl -u recletters` shows, on each restart:
+
+```
+This application is already running (or delete /usr/share/recletters/RUNNING_PID file).
+```
+
+Cause: Play writes a `RUNNING_PID` file early in boot and only removes it via a
+shutdown hook that runs on a *clean* stop. An unclean stop — reboot, OOM kill,
+`kill -9` — leaves the file behind, and every later start aborts because it
+thinks another instance is still running.
+
+The sample unit passes `-Dpidfile.path=/dev/null` (see
+`docs/deploy/recletters.service`), which disables the file entirely and prevents
+this. If you run without that flag and get wedged, recover in this order — note
+`stop` then `start`, **not** `restart`:
+
+```sh
+sudo systemctl stop recletters              # halt the auto-restart loop first
+sudo rm -f /opt/recletters/RUNNING_PID      # path is WorkingDirectory/RUNNING_PID
+sudo systemctl start recletters
+```
+
+`restart` does not work here: its stop phase can SIGTERM a still-booting
+instance before Play's cleanup hook is installed, re-orphaning a fresh
+`RUNNING_PID` — so you stay in the loop. Stopping first, clearing the file with
+nothing running to recreate it, then starting once is what breaks it.
+
+On a `.deb` install the launcher reads flags from `/etc/default/recletters`
+(`JAVA_OPTS`) or `/etc/recletters/application.ini`; add `-Dpidfile.path=/dev/null`
+there and the working directory is `/usr/share/recletters`, so the file, if any,
+is `/usr/share/recletters/RUNNING_PID`.
