@@ -182,6 +182,15 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
       val r = route(app, FakeRequest(GET, s"/submit?token=$tok")).get
       status(r) mustBe BAD_REQUEST
     }
+
+    "accept either of several concurrent tokens (reminder does not invalidate)" in {
+      val did  = dossierId("Alice Example")
+      val old  = issueToken(did, "alice.ref1@test.local")                    // original request
+      val fresh = issueToken(did, "alice.ref1@test.local", replace = false)  // reminder, old kept
+      // Both links must resolve — a referee may use whichever email they opened.
+      status(route(app, FakeRequest(GET, s"/submit?token=$old")).get)   mustBe OK
+      status(route(app, FakeRequest(GET, s"/submit?token=$fresh")).get) mustBe OK
+    }
   }
 
   "POST /submit (decline)" should {

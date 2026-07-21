@@ -92,7 +92,17 @@ importers.hotcrp.option-mapping {
   6  = "external"
   24 = "industry"
 }
+
+# Optional: link each imported dossier back to its HotCRP paper. The dossier
+# name in the requests list becomes a link to this URL, with `{id}` replaced by
+# the HotCRP paperId. Unset leaves dossiers link-less.
+importers.hotcrp.paper-url = "https://host/prix/paper/{id}"
 ```
+
+Only `db.hotcrp.password` is genuinely secret; the rest of the block above is
+non-secret and can just as well live in `application.conf` (that is where the
+shipped `application.conf.template` documents `importers.hotcrp.paper-url`). The
+two files are merged at load time, so placement is a matter of convention.
 
 Committee users then run the importer from `/import`. To drive it headlessly
 (e.g. from cron), the same in-app importer is exposed as a bearer-authed

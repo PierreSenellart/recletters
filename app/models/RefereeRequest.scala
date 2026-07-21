@@ -90,7 +90,16 @@ case class RefereeRequest(
     name: Option[String],
     status: RequestStatus.RequestStatus,
     status_update: ZonedDateTime
-)
+) {
+
+  /** Date shown in the requests table: the last meaningful event on the row —
+    * when the request was sent (for 'requested', since generateToken now stamps
+    * status_update on send) or when the referee acted (received/declined). None
+    * for a 'new' row that was never sent.
+    */
+  def actionDate: Option[ZonedDateTime] =
+    if (status == RequestStatus.news) None else Some(status_update)
+}
 
 object RefereeRequestService {
   implicit val dossierParser: RowParser[Dossier] = DossierService.parser()
@@ -207,7 +216,10 @@ class RefereeRequestService @Inject() (db: Database) {
   }
 
   /** Mint a fresh token. Returns the plaintext (mailed in the request link);
-    * the SHA-256 hash is what gets stored. Replaces any previous token.
+    * the SHA-256 hash is what gets stored. Earlier tokens are left in place —
+    * a reminder adds a new one without invalidating the link in any request
+    * email the referee already received (each expires on its own). Only the
+    * hash is stored, so a DB leak still exposes no usable token.
     */
   def generateToken(r: RefereeRequest): String = {
     val token = PasswordHasher.newToken()
@@ -216,13 +228,13 @@ class RefereeRequestService @Inject() (db: Database) {
       java.time.LocalDateTime.now().plus(TokenTTL)
     )
     db.withTransaction { implicit c =>
-      SQL"""DELETE FROM referee_token
-            WHERE dossier=${r.dossier.id} AND email=${r.email}"""
-        .executeUpdate()
       SQL"""INSERT INTO referee_token(dossier, email, token_hash, expires_at)
             VALUES (${r.dossier.id}, ${r.email}, $hash, $expiresAt)"""
         .executeUpdate()
-      SQL"""UPDATE referee_request SET status='requested'
+      // Stamp status_update on send so it holds the (most recent) sent date for
+      // a 'requested' row — not the row's import time. This makes status_update
+      // the single meaningful timestamp across all statuses.
+      SQL"""UPDATE referee_request SET status='requested', status_update=NOW()
             WHERE dossier=${r.dossier.id} AND email=${r.email}"""
         .executeUpdate()
     }
