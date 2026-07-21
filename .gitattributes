@@ -1,0 +1,3 @@
+# Keep GitHub's "Languages" bar representative of the application sources.
+# test/ is the test suite, not application code.
+test/** linguist-vendored
