@@ -4,8 +4,10 @@ all: deb
 
 # ── Integration tests ────────────────────────────────────────────────────────
 #
-# Each test target first (re)creates the matching DB and flips the Evolutions
-# symlink, then runs the suite. Tests fork the JVM so -Dconfig.resource
+# Each test target first (re)creates the matching DB, then runs the suite. The
+# Evolutions SQL flavour is chosen at runtime from db.default.driver (see
+# modules.FlavoredEvolutionsReader), so no symlink flip is needed. Tests fork
+# the JVM so -Dconfig.resource
 # propagates to the test classpath (see build.sbt).
 
 test: test-pg

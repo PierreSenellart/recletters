@@ -26,7 +26,7 @@
   </script>
 
   @if(r.isDefined) {
-    <p><strong>@r.get.dossier.name</strong> @messages("submit.intro")
+    <p>@messages("submit.intro.before") <strong>@r.get.dossier.name</strong>@messages("submit.intro.after")
        <a href="@config.get[String]("main_site_url")">@config.get[String]("site_name")</a>.
     </p>
 

@@ -81,6 +81,11 @@ email_from     = "EMAIL_FROM"
 # Leave unset/empty to disable.
 # email_bcc    = "committee@example.org"
 
+# Optional link back to the HotCRP paper, shown on the dossier name in the
+# requests list. `{id}` is replaced by the HotCRP paperId; unset = no link.
+# (Non-secret, so it lives here; the HotCRP credentials stay in secrets.conf.)
+# importers.hotcrp.paper-url = "https://host/prix/paper/{id}"
+
 # Reminder job (POST /sendRequestReminderEmails) configuration. Set the
 # timezone to wherever the committee operates so the "7 days since the
 # request was last touched" clock matches the operator's intuition.

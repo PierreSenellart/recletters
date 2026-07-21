@@ -53,13 +53,19 @@ trait DBFixtures extends BeforeAndAfterEach { self: Suite & GuiceOneAppPerSuite 
   /** Issue a fresh referee token for a given (dossier, email) pair. Returns
     * the plaintext so tests can use it in URLs. Only the hash is stored.
     */
-  def issueToken(dossier: Long, email: String, ttlDays: Int = 30): String = {
+  def issueToken(
+      dossier: Long,
+      email: String,
+      ttlDays: Int = 30,
+      replace: Boolean = true
+  ): String = {
     val token  = PasswordHasher.newToken()
     val hash   = PasswordHasher.sha256(token)
     val expiry = Timestamp.valueOf(LocalDateTime.now.plusDays(ttlDays.toLong))
     db.withConnection { implicit c =>
-      SQL"""DELETE FROM referee_token WHERE dossier=$dossier AND email=$email"""
-        .executeUpdate()
+      if (replace)
+        SQL"""DELETE FROM referee_token WHERE dossier=$dossier AND email=$email"""
+          .executeUpdate()
       SQL"""INSERT INTO referee_token(dossier, email, token_hash, expires_at)
             VALUES ($dossier, $email, $hash, $expiry)"""
         .executeUpdate()

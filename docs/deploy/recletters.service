@@ -14,9 +14,15 @@ Wants=network-online.target
 User=recletters
 Group=recletters
 WorkingDirectory=/opt/recletters
+# -Dpidfile.path=/dev/null disables Play's RUNNING_PID file. systemd already
+# tracks the process, and an unclean stop (reboot, OOM, kill -9) would otherwise
+# leave a stale RUNNING_PID that makes every subsequent start abort with
+# "This application is already running". See "Recovering after a reboot" in
+# docs/operate.md.
 ExecStart=/opt/recletters/bin/recletters \
     -Dconfig.file=/etc/recletters/application.conf \
     -Dhttp.port=9000 \
+    -Dpidfile.path=/dev/null \
     -J-Xmx512m
 Restart=on-failure
 RestartSec=5

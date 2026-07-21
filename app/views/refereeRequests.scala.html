@@ -11,6 +11,7 @@
       <th>@messages("requests.referee")</th>
       <th>@messages("requests.refereeRole")</th>
       <th>@messages("requests.refereeDetails")</th>
+      <th>@messages("requests.date")</th>
       <th>@messages("requests.status")</th>
     </tr>
     @for(r <- requests) {
@@ -32,6 +33,7 @@
         </td>
         <td>@r.role.getOrElse("")</td>
         <td>@r.details.getOrElse("")</td>
+        <td>@r.actionDate.map(_.toLocalDate.toString).getOrElse("")</td>
         <td>
           @if(r.status == RequestStatus.received) {
             <a href="@routes.RefereeController.getLetter(r.dossier.id, r.email)">@messages(s"status.${r.status}")</a>
