@@ -1,5 +1,7 @@
 # recletters
 
+[![CI](https://github.com/PierreSenellart/recletters/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/PierreSenellart/recletters/actions/workflows/ci.yml)
+
 A small web application for collecting recommendation letters from referees.
 Committee members (or an importer) register dossiers and the referee email
 addresses each dossier nominates; the site emails referees a tokenised
