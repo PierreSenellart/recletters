@@ -21,6 +21,14 @@ class ImportController @Inject() (
     config: Configuration
 ) extends MainController {
 
+  /** One-line run summary, shared by the UI flash and the cron endpoint. The
+    * shape is stable on purpose: a cron wrapper can key on "0 new, 0 updated"
+    * to stay silent unless the upstream actually moved.
+    */
+  private def summary(name: String, res: ImportResult): String =
+    s"$name: ${res.total} (${res.created} new, ${res.updated} updated, " +
+      s"${res.unchanged} unchanged)"
+
   def index(): EssentialAction = withAuth() { implicit request =>
     active_call match {
       case None    => Ok(views.html.importIndex(Seq.empty, None, None))
@@ -37,7 +45,7 @@ class ImportController @Inject() (
         imports.run(name, c) match {
           case Right(res) =>
             Redirect(routes.ImportController.index()).flashing(
-              "import.result" -> s"$name: ${res.total} (${res.created} new, ${res.updated} updated)"
+              "import.result" -> summary(name, res)
             )
           case Left(err) =>
             Redirect(routes.ImportController.index()).flashing(
@@ -62,8 +70,7 @@ class ImportController @Inject() (
             )
             val res = imports.applyAll(c, items)
             Redirect(routes.ImportController.index()).flashing(
-              "import.result" ->
-                s"csv: ${res.total} (${res.created} new, ${res.updated} updated)"
+              "import.result" -> summary("csv", res)
             )
         }
     }
@@ -72,8 +79,9 @@ class ImportController @Inject() (
   /** Bearer-authed JSON bulk endpoint. Body shape:
     * `{ "call": "slug-or-id", "dossiers": [ImportedDossier, ...] }`
     *
-    * Reply: `{ "created": n, "updated": n, "total": n }`. Idempotent w.r.t.
-    * (call_id, external_ref).
+    * Reply: `{ "created": n, "updated": n, "unchanged": n, "total": n }`.
+    * Idempotent w.r.t. (call_id, external_ref): re-posting the same payload
+    * reports it as `unchanged` and writes nothing.
     */
   // Check the bearer token in the body-parser stage, before we read or parse
   // the request body. Play runs the body parser ahead of any action logic, so
@@ -106,9 +114,10 @@ class ImportController @Inject() (
         val res = imports.applyAll(c, items)
         Results.Ok(
           Json.obj(
-            "created" -> res.created,
-            "updated" -> res.updated,
-            "total"   -> res.total
+            "created"   -> res.created,
+            "updated"   -> res.updated,
+            "unchanged" -> res.unchanged,
+            "total"     -> res.total
           )
         )
     }
@@ -126,7 +135,7 @@ class ImportController @Inject() (
         case Some(c) =>
           imports.run(name, c) match {
             case Right(res) =>
-              Ok(s"$name: ${res.total} (${res.created} new, ${res.updated} updated)\n")
+              Ok(summary(name, res) + "\n")
             case Left(err) =>
               BadRequest(s"$err\n")
           }

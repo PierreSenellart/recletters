@@ -16,5 +16,9 @@ class ImportRegistry @Inject() (
 
   def enabled: Seq[DossierImporter] = all.filter(_.isEnabled)
 
+  /** Enabled importers that can pull on their own — what a refresh (button or
+    * cron) re-reads. */
+  def pullable: Seq[DossierImporter] = enabled.filter(_.canPull)
+
   def byName(n: String): Option[DossierImporter] = all.find(_.name == n)
 }

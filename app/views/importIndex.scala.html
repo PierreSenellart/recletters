@@ -18,8 +18,8 @@
     <ul>
       @for(imp <- importers) {
         <li>
-          @imp.name @if(imp.name == "csv" || imp.name == "json-api") { (interactive) }
-          @if(imp.name != "csv" && imp.name != "json-api") {
+          @imp.name @if(!imp.canPull) { (interactive) }
+          @if(imp.canPull) {
             @helper.form(action = routes.ImportController.runImporter(imp.name)) {
               @helper.CSRF.formField
               <input type="submit" value="@messages("import.runImporter") @imp.name">

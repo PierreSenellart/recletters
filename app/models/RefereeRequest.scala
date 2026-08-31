@@ -27,6 +27,20 @@ object RequestStatus {
     else throw new IllegalArgumentException(s"Unknown request_status: $s")
 }
 
+/** What an idempotent import write did to a row. `updated` means at least one
+  * field really differed from what upstream now sends; `unchanged` means the
+  * stored row already matched, so nothing was written. Keeping the two apart is
+  * what lets a scheduled re-import run as often as it likes and still report
+  * only genuine upstream drift.
+  */
+object ImportOutcome {
+  type ImportOutcome = String
+
+  val created   : ImportOutcome = "created"
+  val updated   : ImportOutcome = "updated"
+  val unchanged : ImportOutcome = "unchanged"
+}
+
 case class Dossier(
     id: Long,
     call_id: Int,
@@ -44,9 +58,18 @@ object DossierService {
 class DossierService @Inject() (db: Database) {
   import DossierService._
 
+  private val dossierMetadata =
+    get[Long]("id") ~ get[String]("name") ~
+      get[Option[String]]("url") ~ get[Option[String]]("details")
+
   /** Insert-or-update keyed by (call_id, external_ref) when external_ref is
     * present, otherwise by (call_id, name). Idempotent; used by importers.
-    * Returns (dossier id, isNew).
+    * Returns (dossier id, what the write actually did).
+    *
+    * A matching row whose name, url and details already equal what upstream
+    * sends is left untouched and reported as `unchanged`: re-importing an
+    * unchanged dossier writes nothing, so the counts a cron job sees are a
+    * report of real upstream changes rather than of how many rows were seen.
     */
   def upsert(
       callId: Int,
@@ -54,30 +77,34 @@ class DossierService @Inject() (db: Database) {
       externalRef: Option[String],
       url: Option[String],
       details: Option[String]
-  ): (Long, Boolean) = db.withTransaction { implicit c =>
-    val existingId: Option[Long] = externalRef match {
+  ): (Long, ImportOutcome.ImportOutcome) = db.withTransaction { implicit c =>
+    val existing = externalRef match {
       case Some(ref) =>
-        SQL"""SELECT id FROM dossier
+        SQL"""SELECT id, name, url, details FROM dossier
               WHERE call_id=$callId AND external_ref=$ref"""
-          .as(scalar[Long].singleOpt)
+          .as(dossierMetadata.singleOpt)
       case None =>
-        SQL"""SELECT id FROM dossier
+        SQL"""SELECT id, name, url, details FROM dossier
               WHERE call_id=$callId AND name=$name AND external_ref IS NULL"""
-          .as(scalar[Long].singleOpt)
+          .as(dossierMetadata.singleOpt)
     }
-    existingId match {
-      case Some(id) =>
-        SQL"""UPDATE dossier
-              SET name=$name, url=$url, details=$details
-              WHERE id=$id"""
-          .executeUpdate()
-        (id, false)
+    existing match {
+      case Some(id ~ oldName ~ oldUrl ~ oldDetails) =>
+        if (oldName == name && oldUrl == url && oldDetails == details)
+          (id, ImportOutcome.unchanged)
+        else {
+          SQL"""UPDATE dossier
+                SET name=$name, url=$url, details=$details
+                WHERE id=$id"""
+            .executeUpdate()
+          (id, ImportOutcome.updated)
+        }
       case None =>
         val id =
           SQL"""INSERT INTO dossier (call_id, name, external_ref, url, details)
                 VALUES ($callId, $name, $externalRef, $url, $details)"""
             .executeInsert(scalar[Long].single)
-        (id, true)
+        (id, ImportOutcome.created)
     }
   }
 }
@@ -197,21 +224,28 @@ class RefereeRequestService @Inject() (db: Database) {
       email: String,
       role: Option[String],
       details: Option[String]
-  ): Boolean = db.withTransaction { implicit c =>
+  ): ImportOutcome.ImportOutcome = db.withTransaction { implicit c =>
     val existing =
-      SQL"""SELECT 1 FROM referee_request
+      SQL"""SELECT role, details FROM referee_request
             WHERE dossier=$dossierId AND email=$email"""
-        .as(scalar[Int].singleOpt)
-    if (existing.isDefined) {
-      SQL"""UPDATE referee_request SET role=$role, details=$details
-            WHERE dossier=$dossierId AND email=$email"""
-        .executeUpdate()
-      false
-    } else {
-      SQL"""INSERT INTO referee_request(dossier, email, details, role)
-            VALUES ($dossierId, $email, $details, $role)"""
-        .executeUpdate()
-      true
+        .as((get[Option[String]]("role") ~ get[Option[String]]("details")).singleOpt)
+    existing match {
+      case Some(oldRole ~ oldDetails) =>
+        // Same caveat as the dossier upsert: only write when something moved,
+        // so an unchanged referee never inflates the "updated" count. status
+        // and tokens are never touched here.
+        if (oldRole == role && oldDetails == details) ImportOutcome.unchanged
+        else {
+          SQL"""UPDATE referee_request SET role=$role, details=$details
+                WHERE dossier=$dossierId AND email=$email"""
+            .executeUpdate()
+          ImportOutcome.updated
+        }
+      case None =>
+        SQL"""INSERT INTO referee_request(dossier, email, details, role)
+              VALUES ($dossierId, $email, $details, $role)"""
+          .executeUpdate()
+        ImportOutcome.created
     }
   }
 

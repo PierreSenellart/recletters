@@ -51,6 +51,16 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
     }
   }
 
+  "POST /requests/refresh" should {
+    "redirect unauthenticated requests to /login" in {
+      val r = route(app,
+        FakeRequest(POST, "/requests/refresh").withCSRFToken
+      ).get
+      status(r) mustBe SEE_OTHER
+      redirectLocation(r).get must include("/login")
+    }
+  }
+
   // ── Auth ─────────────────────────────────────────────────────────────────
 
   "POST /authenticate" should {
@@ -321,7 +331,7 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
       contentAsString(r) must include("\"created\":1")
     }
 
-    "be idempotent: a re-POST updates instead of duplicating" in {
+    "be idempotent: a re-POST reports unchanged instead of duplicating" in {
       val first = route(app, FakeRequest(POST, "/api/dossiers/bulk")
         .withHeaders("Content-Type" -> "application/json",
                      "Authorization" -> "Bearer test-token")
@@ -334,7 +344,29 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
         .withBody(payload)
       ).get
       status(second) mustBe OK
+      contentAsString(second) must include("\"unchanged\":1")
+      contentAsString(second) must include("\"updated\":0")
+    }
+
+    "report a dossier as updated when upstream metadata changed" in {
+      val first = route(app, FakeRequest(POST, "/api/dossiers/bulk")
+        .withHeaders("Content-Type" -> "application/json",
+                     "Authorization" -> "Bearer test-token")
+        .withBody(payload)
+      ).get
+      status(first) mustBe OK
+
+      // Same externalRef, corrected notes: this is the case the refresh button
+      // and the cron run exist for (a title fixed upstream after the import).
+      val retitled = payload.replace("\"notes\": null", "\"notes\": \"A real title\"")
+      val second = route(app, FakeRequest(POST, "/api/dossiers/bulk")
+        .withHeaders("Content-Type" -> "application/json",
+                     "Authorization" -> "Bearer test-token")
+        .withBody(retitled)
+      ).get
+      status(second) mustBe OK
       contentAsString(second) must include("\"updated\":1")
+      contentAsString(second) must include("\"created\":0")
     }
   }
 

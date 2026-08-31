@@ -44,6 +44,8 @@ requests.status = Statut
 requests.addManually = Ajouter manuellement une demande
 requests.sendRequests = Envoyer les courriels de demande
 requests.sendReminders = Envoyer les courriels de rappel
+requests.refresh = Actualiser les dossiers depuis la source
+requests.refreshed = {0} dossier(s) actualisés : {1} nouveaux, {2} mis à jour, {3} inchangés.
 
 add.title = Ajouter une nouvelle demande
 add.dossierName = Nom de la personne candidate
@@ -84,7 +86,7 @@ import.intro = Récupérer les dossiers depuis un système amont vers la campagn
 import.runImporter = Lancer
 import.uploadCsv = Téléverser un CSV
 import.csv.help = Colonnes CSV : external_ref, name, url, notes, referee_email, referee_role
-import.success = {0} dossier(s) importés ({1} nouveaux, {2} mis à jour).
+import.success = {0} dossier(s) importés ({1} nouveaux, {2} mis à jour, {3} inchangés).
 import.noActiveCall = Aucune campagne active n''est configurée.
 
 email.passwordReset.subject = {0} : réinitialisation de mot de passe
