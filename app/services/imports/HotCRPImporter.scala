@@ -29,6 +29,7 @@ class HotCRPImporter @Inject() (
   val name                = "hotcrp"
   def isEnabled: Boolean  =
     config.getOptional[Boolean]("importers.hotcrp.enabled").getOrElse(false)
+  override val canPull    = true
 
   private def optionMapping: Map[Int, String] =
     config

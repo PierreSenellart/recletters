@@ -23,8 +23,22 @@ starting from the first tagged OSS release.
 - Admin CLI: `tools.AddUser`, `tools.NewCall`.
 - Test scaffolding (ScalaTest + scalatestplus-play); unit specs for
   `PasswordHasher`, `RequestStatus`, `Call`, and `CsvImporter`.
+- **Refresh dossiers from upstream** button on `/requests`, shown when an
+  enabled importer can pull on its own (`DossierImporter.canPull`). Re-reads
+  every such upstream for the current call and reports how many dossiers were
+  new, updated and unchanged. `POST /requests/refresh`.
+- Change detection in imports: a dossier (or referee) whose stored fields
+  already match what upstream sends is left untouched and counted as
+  `unchanged`, so a scheduled re-import writes nothing and reports only real
+  drift. Created and updated dossiers are logged at INFO.
+- `docs/integration.md`: *Scheduled refresh* section with a cron recipe that
+  stays silent unless the upstream actually changed.
 
 ### Changed
+- `POST /api/dossiers/bulk` now also returns `unchanged`; re-posting an
+  identical payload reports `{"updated":0,"unchanged":1}` where it previously
+  reported `updated:1`. `ImportResult.skipped` (never set) is replaced by
+  `unchanged`.
 - Schema is now managed by **Play Evolutions** (`conf/evolutions/default/`);
   the legacy `conf/database.sql` is removed.
 - `dossier.year SMALLINT` → `dossier.call_id INTEGER NOT NULL REFERENCES

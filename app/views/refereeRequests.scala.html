@@ -1,9 +1,14 @@
-@(requests: Seq[RefereeRequest])(
+@(requests: Seq[RefereeRequest], canRefresh: Boolean,
+  refreshed: Option[services.imports.ImportResult])(
   implicit active_call: Option[Call], calls: Seq[Call], user: Option[User],
   config: play.api.Configuration, messages: play.api.i18n.Messages,
   request: RequestHeader)
 
 @main(messages("requests.title")) {
+  @if(refreshed.isDefined) {
+    <p class="ok">@messages("requests.refreshed", refreshed.get.total, refreshed.get.created, refreshed.get.updated, refreshed.get.unchanged)</p>
+  }
+
   <table>
     <tr>
       <th>@messages("requests.dossierName")</th>
@@ -59,6 +64,12 @@
     @helper.form(action = routes.RefereeController.sendRequestReminderEmails()) {
       @helper.CSRF.formField
       <input type="submit" value="@messages("requests.sendReminders")">
+    }
+    @if(canRefresh) {
+      @helper.form(action = routes.RefereeController.refresh()) {
+        @helper.CSRF.formField
+        <input type="submit" value="@messages("requests.refresh")">
+      }
     }
   </div>
 }

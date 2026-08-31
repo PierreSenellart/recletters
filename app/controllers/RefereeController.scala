@@ -18,10 +18,12 @@ import models.{
   RefereeRequestService,
   RequestStatus
 }
+import services.imports.{ImportResult, ImportService}
 
 class RefereeController @Inject() (
     mailer: MailerService,
-    apiAuth: ApiAuthAction
+    apiAuth: ApiAuthAction,
+    imports: ImportService
 )(implicit
     db: Database,
     cc: ControllerComponents,
@@ -76,8 +78,35 @@ class RefereeController @Inject() (
   }
 
   def list(): EssentialAction = withActiveCall { call => implicit request =>
-    Ok(views.html.refereeRequests(model.findAll(call.id)))
+    Ok(
+      views.html.refereeRequests(
+        model.findAll(call.id),
+        imports.listPullable.nonEmpty,
+        refreshCounts(request.flash.get("refresh"))
+      )
+    )
   }
+
+  /** Re-read the metadata of every upstream that can pull (HotCRP and friends)
+    * for the current call, so a title or referee fixed upstream after the first
+    * import shows up here without waiting for the next cron run. Idempotent:
+    * dossiers matched by external_ref are updated in place, unchanged ones are
+    * not written at all, and no mail is sent.
+    *
+    * Redirect-after-POST, so reloading the resulting page does not re-import;
+    * the counts travel in the flash as "created,updated,unchanged".
+    */
+  def refresh(): EssentialAction = withActiveCall { call => implicit request =>
+    val res = imports.refreshAll(call)
+    Redirect(routes.RefereeController.list())
+      .flashing("refresh" -> s"${res.created},${res.updated},${res.unchanged}")
+  }
+
+  private def refreshCounts(flash: Option[String]): Option[ImportResult] =
+    flash.map(_.split(',').toSeq).collect {
+      case Seq(c, u, n) if Seq(c, u, n).forall(v => v.nonEmpty && v.forall(_.isDigit)) =>
+        ImportResult(c.toInt, u.toInt, n.toInt)
+    }
 
   def form(call: Call): Form[RefereeRequest] = Form(
     mapping(

@@ -45,6 +45,8 @@ requests.status = Status
 requests.addManually = Manually add a request
 requests.sendRequests = Send request emails
 requests.sendReminders = Send request email reminders
+requests.refresh = Refresh dossiers from upstream
+requests.refreshed = Refreshed {0} dossier(s): {1} new, {2} updated, {3} unchanged.
 
 add.title = Add a new request
 add.dossierName = Name of person being referred
@@ -85,7 +87,7 @@ import.intro = Pull dossiers from an upstream system into the current call.
 import.runImporter = Run
 import.uploadCsv = Upload CSV
 import.csv.help = CSV columns: external_ref, name, url, notes, referee_email, referee_role
-import.success = Imported {0} dossier(s) ({1} new, {2} updated).
+import.success = Imported {0} dossier(s) ({1} new, {2} updated, {3} unchanged).
 import.noActiveCall = No active call configured.
 
 email.passwordReset.subject = {0}: password reinitialization

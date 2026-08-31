@@ -15,6 +15,7 @@ POST /reset_password                controllers.AuthController.resetPassword()
 GET  /add                           controllers.RefereeController.showAdd()
 POST /add                           controllers.RefereeController.add()
 GET  /requests                      controllers.RefereeController.list()
+POST /requests/refresh              controllers.RefereeController.refresh()
 POST /sendRequestEmails             controllers.RefereeController.sendRequestEmails()
 POST /sendRequestReminderEmails     controllers.RefereeController.sendRequestReminderEmails()
 

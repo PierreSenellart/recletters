@@ -77,8 +77,13 @@ Dossiers can be loaded via:
 - the companion [`tools/hotcrp-import.py`](tools/hotcrp-import.py) script
   (cron + bearer).
 
+Imported dossiers stay in sync: the *Refresh dossiers from upstream* button on
+`/requests` (and `POST /api/import/run/:name` from cron) re-reads every upstream
+that can pull, writing only what actually changed and reporting how many
+dossiers were new, updated and unchanged.
+
 See [`docs/integration.md`](docs/integration.md) for the `ImportedDossier`
-contract and how to write a new importer.
+contract, the scheduled-refresh cron recipe, and how to write a new importer.
 
 ## License
 
