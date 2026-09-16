@@ -85,6 +85,16 @@ dossiers were new, updated and unchanged.
 See [`docs/integration.md`](docs/integration.md) for the `ImportedDossier`
 contract, the scheduled-refresh cron recipe, and how to write a new importer.
 
+## Authorship
+
+`recletters` was written by Pierre Senellart. Since 2026, new features, tests
+and documentation have been developed with the assistance of generative models
+from Anthropic (*Claude*); the data model, the workflow and the behavior of the
+application were specified and reviewed by the author, who is responsible for
+the whole. The authentication, token and upload paths were reviewed by the
+author independently of how they were first written. The test suite runs in
+continuous integration against both supported databases.
+
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
