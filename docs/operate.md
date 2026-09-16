@@ -58,6 +58,33 @@ Committee members open `/requests`, click on a received status to download
 the PDF. Letters are served with `Content-Disposition: attachment` and
 `X-Content-Type-Options: nosniff`.
 
+## Cancelling a request
+
+When an application is withdrawn, or a candidate replaces a referee after the
+invitations have gone out, set the corresponding requests to `cancelled`:
+
+```sql
+UPDATE referee_request SET status='cancelled', status_update=NOW()
+WHERE dossier=<id> AND status IN ('new','requested');
+```
+
+There is no button for this yet. A cancelled request is skipped by both
+*Send request emails* and *Send request email reminders*, an importer run
+never resets its status, and the submission page refuses it with `410 Gone`.
+
+Cancelling does not by itself invalidate the link the referee already
+received: only the token does that. If the letter must not arrive at all,
+delete the tokens as well, which makes every link for that dossier show the
+invalid-token page.
+
+```sql
+DELETE FROM referee_token WHERE dossier=<id>;
+```
+
+Note that this also erases the record of which requests were mailed and when,
+so prefer cancelling alone unless a referee is likely to submit despite being
+told.
+
 ## Archival
 
 Set `is_archived=true` on the `call_` row to remove it from the default

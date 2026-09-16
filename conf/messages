@@ -68,6 +68,7 @@ submit.no = no
 submit.letter = Letter (PDF format):
 submit.submit = Submit
 submit.invalidToken = Invalid or expired token.
+submit.cancelled = This request has been cancelled, and a letter can no longer be submitted for it. Please contact the committee if you believe this is a mistake.
 submit.alert.noName = Please enter your name.
 submit.alert.noFile = Please select a file to upload.
 submit.received.intro = We have successfully received your

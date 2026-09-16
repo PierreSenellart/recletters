@@ -67,6 +67,7 @@ submit.no = non
 submit.letter = Lettre (format PDF) :
 submit.submit = Soumettre
 submit.invalidToken = Jeton invalide ou expiré.
+submit.cancelled = Cette demande a été annulée : il n’est plus possible de soumettre une lettre. Merci de contacter le comité si vous pensez qu’il s’agit d’une erreur.
 submit.alert.noName = Veuillez entrer votre nom.
 submit.alert.noFile = Veuillez sélectionner un fichier à téléverser.
 submit.received.intro = Nous avons bien reçu votre

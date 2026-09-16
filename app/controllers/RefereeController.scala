@@ -175,6 +175,8 @@ class RefereeController @Inject() (
 
   def showSubmit(token: String): Action[AnyContent] = Action { implicit request =>
     model.findByRefereeToken(token) match {
+      case Some(r) if r.status == RequestStatus.cancelled =>
+        Gone(views.html.form_submit(Some(r), token, None))
       case Some(r) => Ok(views.html.form_submit(Some(r), token, None))
       case None    => BadRequest(views.html.form_submit(None, token, None))
     }
@@ -195,7 +197,14 @@ class RefereeController @Inject() (
       nameS   <- params.get("name").flatMap(_.headOption)
       r       <- model.findByRefereeToken(tokenS)
     } yield {
-      statusS match {
+      // A cancelled request is one the committee withdrew (a duplicate or a
+      // withdrawn application). The token may still be live and the referee may
+      // still hold the link, so refuse here rather than record a letter nobody
+      // will read. 'declined' is deliberately not refused: a referee who said
+      // no may change their mind and submit after all.
+      if (r.status == RequestStatus.cancelled)
+        Gone(views.html.form_submit(Some(r), tokenS, None))
+      else statusS match {
         case "received" =>
           data.file("letter") match {
             case Some(f) =>

@@ -50,6 +50,24 @@ trait DBFixtures extends BeforeAndAfterEach { self: Suite & GuiceOneAppPerSuite 
         .as(scalar[String].single)
     }
 
+  /** Whether a letter is stored for a (dossier, email) pair. */
+  def hasLetter(dossier: Long, email: String): Boolean =
+    db.withConnection { implicit c =>
+      SQL"""SELECT COUNT(*) FROM referee_letter
+            WHERE dossier=$dossier AND email=$email"""
+        .as(scalar[Long].single) > 0
+    }
+
+  /** Force a referee_request status. Needed for states the application itself
+    * cannot yet reach: cancelling a request is a manual DB edit today.
+    */
+  def setRefereeStatus(dossier: Long, email: String, status: String): Unit =
+    db.withConnection { implicit c =>
+      SQL"""UPDATE referee_request SET status=$status, status_update=NOW()
+            WHERE dossier=$dossier AND email=$email"""
+        .executeUpdate()
+    }
+
   /** Issue a fresh referee token for a given (dossier, email) pair. Returns
     * the plaintext so tests can use it in URLs. Only the hash is stored.
     */

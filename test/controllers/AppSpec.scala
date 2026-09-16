@@ -193,6 +193,15 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
       status(r) mustBe BAD_REQUEST
     }
 
+    "refuse a cancelled request" in {
+      val did = dossierId("Alice Example")
+      val tok = issueToken(did, "alice.ref1@test.local")
+      setRefereeStatus(did, "alice.ref1@test.local", "cancelled")
+      val r = route(app, FakeRequest(GET, s"/submit?token=$tok")).get
+      status(r) mustBe GONE
+      contentAsString(r) must not include "name=\"letter\""
+    }
+
     "accept either of several concurrent tokens (reminder does not invalidate)" in {
       val did  = dossierId("Alice Example")
       val old  = issueToken(did, "alice.ref1@test.local")                    // original request
@@ -222,6 +231,96 @@ class AppSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
       ).get
       status(r) mustBe OK
       refereeStatus(did, "bob.ref@test.local") mustBe "declined"
+    }
+  }
+
+  "POST /submit (cancelled request)" should {
+    "refuse to store a letter" in {
+      import java.nio.file.Files
+      val did = dossierId("Bob Example")
+      val tok = issueToken(did, "bob.ref@test.local")
+      setRefereeStatus(did, "bob.ref@test.local", "cancelled")
+      val tmp = Files.createTempFile("letter", ".pdf")
+      Files.write(tmp, minimalPdf)
+      val r = route(app, FakeRequest(POST, "/submit")
+        .withMultipartFormDataBody(
+          play.api.mvc.MultipartFormData(
+            dataParts = Map(
+              "token"  -> Seq(tok),
+              "status" -> Seq("received"),
+              "name"   -> Seq("Bob Referee")
+            ),
+            files = Seq(
+              play.api.mvc.MultipartFormData.FilePart(
+                key         = "letter",
+                filename    = "letter.pdf",
+                contentType = Some("application/pdf"),
+                ref         = play.api.libs.Files.SingletonTemporaryFileCreator
+                                .create(tmp)
+              )
+            ),
+            badParts = Seq.empty
+          )
+        )
+      ).get
+      status(r) mustBe GONE
+      refereeStatus(did, "bob.ref@test.local") mustBe "cancelled"
+      hasLetter(did, "bob.ref@test.local") mustBe false
+    }
+
+    "refuse a decline too, leaving the status untouched" in {
+      val did = dossierId("Bob Example")
+      val tok = issueToken(did, "bob.ref@test.local")
+      setRefereeStatus(did, "bob.ref@test.local", "cancelled")
+      val r = route(app, FakeRequest(POST, "/submit")
+        .withMultipartFormDataBody(
+          play.api.mvc.MultipartFormData(
+            dataParts = Map(
+              "token"  -> Seq(tok),
+              "status" -> Seq("declined"),
+              "name"   -> Seq("Bob Referee")
+            ),
+            files    = Seq.empty,
+            badParts = Seq.empty
+          )
+        )
+      ).get
+      status(r) mustBe GONE
+      refereeStatus(did, "bob.ref@test.local") mustBe "cancelled"
+    }
+
+    // The refusal is specific to 'cancelled': a referee who declined may still
+    // change their mind and send a letter afterwards.
+    "still accept a letter from a referee who had declined" in {
+      import java.nio.file.Files
+      val did = dossierId("Bob Example")
+      val tok = issueToken(did, "bob.ref@test.local")
+      setRefereeStatus(did, "bob.ref@test.local", "declined")
+      val tmp = Files.createTempFile("letter", ".pdf")
+      Files.write(tmp, minimalPdf)
+      val r = route(app, FakeRequest(POST, "/submit")
+        .withMultipartFormDataBody(
+          play.api.mvc.MultipartFormData(
+            dataParts = Map(
+              "token"  -> Seq(tok),
+              "status" -> Seq("received"),
+              "name"   -> Seq("Bob Referee")
+            ),
+            files = Seq(
+              play.api.mvc.MultipartFormData.FilePart(
+                key         = "letter",
+                filename    = "letter.pdf",
+                contentType = Some("application/pdf"),
+                ref         = play.api.libs.Files.SingletonTemporaryFileCreator
+                                .create(tmp)
+              )
+            ),
+            badParts = Seq.empty
+          )
+        )
+      ).get
+      status(r) mustBe OK
+      refereeStatus(did, "bob.ref@test.local") mustBe "received"
     }
   }
 

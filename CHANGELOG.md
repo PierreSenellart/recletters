@@ -35,6 +35,10 @@ starting from the first tagged OSS release.
   stays silent unless the upstream actually changed.
 
 ### Changed
+- A referee request whose status is `cancelled` no longer accepts a
+  submission: `GET /submit` and `POST /submit` both answer `410 Gone` and the
+  page explains why (`submit.cancelled`). A `declined` request is deliberately
+  still accepted, so a referee who changed their mind can send a letter.
 - `POST /api/dossiers/bulk` now also returns `unchanged`; re-posting an
   identical payload reports `{"updated":0,"unchanged":1}` where it previously
   reported `updated:1`. `ImportResult.skipped` (never set) is replaced by

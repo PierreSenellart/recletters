@@ -26,62 +26,66 @@
   </script>
 
   @if(r.isDefined) {
-    <p>@messages("submit.intro.before") <strong>@r.get.dossier.name</strong>@messages("submit.intro.after")
-       <a href="@config.get[String]("main_site_url")">@config.get[String]("site_name")</a>.
-    </p>
-
-    @if(valid.isDefined) {
-      @if(valid.get) {
-        <p class="ok">@messages("submit.received.intro")
-          @if(r.get.status == RequestStatus.received) {
-            <a href="@routes.RefereeController.getLetterByToken(token)">@messages("submit.received.letter")</a>.
-          } else {
-            @messages("submit.received.decline")
-          }
-          <br>@messages("submit.received.canChange")
-        </p>
-      } else {
-        <p class="error">@messages("submit.error")</p>
-      }
-    }
-
-    @helper.form(action = routes.RefereeController.submit(),
-                 Symbol("enctype") -> "multipart/form-data",
-                 Symbol("id") -> "submit",
-                 Symbol("onsubmit") -> "return validate()") {
-      <div>
-        <input type="hidden" name="token" value="@token">
-        <label>@messages("submit.refereeEmail")</label>
-        <input type="text" value="@r.get.email" disabled="disabled" size="40">
-      </div>
-      <div>
-        <label for="name">@messages("submit.refereeName")</label>
-        <input type="text" name="name" id="name" size="40" value="@r.get.name.getOrElse("")">
-      </div>
-      <p>
-        @messages("submit.willing")
-        <input type="radio" id="status_r" name="status" value="received" checked="checked" onclick="showHideFile()">
-        <label for="status_r">@messages("submit.yes")</label>
-        <input type="radio" id="status_d" name="status" value="declined" onclick="showHideFile()">
-        <label for="status_d">@messages("submit.no")</label>
+    @if(r.get.status == RequestStatus.cancelled) {
+      <p class="error">@messages("submit.cancelled")</p>
+    } else {
+      <p>@messages("submit.intro.before") <strong>@r.get.dossier.name</strong>@messages("submit.intro.after")
+         <a href="@config.get[String]("main_site_url")">@config.get[String]("site_name")</a>.
       </p>
 
-      <div id="letter_box">
-        <label for="letter">@messages("submit.letter")</label>
-        <input type="file" accept=".pdf,application/pdf" name="letter" id="letter">
-      </div>
-
-      <div>
-        <input type="submit" value="@messages("submit.submit")">
-      </div>
-    }
-
-    <script>
-      @if(r.get.status == RequestStatus.declined) {
-        document.getElementById("status_d").checked = true;
+      @if(valid.isDefined) {
+        @if(valid.get) {
+          <p class="ok">@messages("submit.received.intro")
+            @if(r.get.status == RequestStatus.received) {
+              <a href="@routes.RefereeController.getLetterByToken(token)">@messages("submit.received.letter")</a>.
+            } else {
+              @messages("submit.received.decline")
+            }
+            <br>@messages("submit.received.canChange")
+          </p>
+        } else {
+          <p class="error">@messages("submit.error")</p>
+        }
       }
-      showHideFile();
-    </script>
+
+      @helper.form(action = routes.RefereeController.submit(),
+                   Symbol("enctype") -> "multipart/form-data",
+                   Symbol("id") -> "submit",
+                   Symbol("onsubmit") -> "return validate()") {
+        <div>
+          <input type="hidden" name="token" value="@token">
+          <label>@messages("submit.refereeEmail")</label>
+          <input type="text" value="@r.get.email" disabled="disabled" size="40">
+        </div>
+        <div>
+          <label for="name">@messages("submit.refereeName")</label>
+          <input type="text" name="name" id="name" size="40" value="@r.get.name.getOrElse("")">
+        </div>
+        <p>
+          @messages("submit.willing")
+          <input type="radio" id="status_r" name="status" value="received" checked="checked" onclick="showHideFile()">
+          <label for="status_r">@messages("submit.yes")</label>
+          <input type="radio" id="status_d" name="status" value="declined" onclick="showHideFile()">
+          <label for="status_d">@messages("submit.no")</label>
+        </p>
+
+        <div id="letter_box">
+          <label for="letter">@messages("submit.letter")</label>
+          <input type="file" accept=".pdf,application/pdf" name="letter" id="letter">
+        </div>
+
+        <div>
+          <input type="submit" value="@messages("submit.submit")">
+        </div>
+      }
+
+      <script>
+        @if(r.get.status == RequestStatus.declined) {
+          document.getElementById("status_d").checked = true;
+        }
+        showHideFile();
+      </script>
+    }
   } else {
     @messages("submit.invalidToken")
   }
