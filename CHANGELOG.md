@@ -39,6 +39,10 @@ starting from the first tagged OSS release.
   `email_from_override`, `email_signature_override`) of the selected call,
   which previously could only be set in SQL. An empty field clears the
   override; line breaks and control characters are refused.
+- `docs/install.md`: the `.deb` path now keeps site configuration outside the
+  package-managed `/etc/recletters` (a link into `/usr/share/recletters/conf/`,
+  rewritten on upgrade and missed by backups of `/etc`); new *Serving under a
+  path prefix* and *Upgrading* sections.
 
 ### Changed
 - Referee requests and reminders are no longer signed with the bare site
