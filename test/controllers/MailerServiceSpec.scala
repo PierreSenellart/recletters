@@ -36,7 +36,10 @@ class MailerServiceSpec extends PlaySpec with GuiceOneAppPerSuite {
     * absence of email_bcc. Messages/langs come from the running app so the
     * real message bundles resolve.
     */
-  private def service(bcc: Option[String]): (MailerService, CapturingMailer) = {
+  private def service(
+      bcc: Option[String],
+      signature: Option[String] = None
+  ): (MailerService, CapturingMailer) = {
     val mailer = new CapturingMailer
     val base = Map[String, Any](
       "site_name"  -> "Test Site",
@@ -44,7 +47,9 @@ class MailerServiceSpec extends PlaySpec with GuiceOneAppPerSuite {
       "site_url"   -> "https://test.local"
     )
     implicit val cfg: Configuration =
-      Configuration.from(bcc.fold(base)(b => base + ("email_bcc" -> b)))
+      Configuration.from(
+        base ++ bcc.map("email_bcc" -> _) ++ signature.map("email_signature" -> _)
+      )
     val svc = new MailerService(
       mailer,
       app.injector.instanceOf[MessagesApi],
@@ -63,8 +68,13 @@ class MailerServiceSpec extends PlaySpec with GuiceOneAppPerSuite {
       grace_seconds = 0,
       site_name_override  = None,
       email_from_override = None,
+      email_signature_override = None,
       is_archived   = false
     )
+
+  /** What follows the "-- " signature delimiter in the last mail sent. */
+  private def signatureOf(mailer: CapturingMailer): String =
+    mailer.sent.head.bodyText.get.split("\n-- \n", 2)(1).trim
 
   "MailerService" should {
 
@@ -113,6 +123,43 @@ class MailerServiceSpec extends PlaySpec with GuiceOneAppPerSuite {
       val (svc, mailer) = service(Some("   "))
       svc.sendRefereeRequest(callFixture, "Alice", "ref@test.local", "tok")
       mailer.sent.head.bcc mustBe empty
+    }
+
+    "sign as the committee of the site by default, not as the bare site name" in {
+      val (svc, mailer) = service(None)
+      svc.sendRefereeRequest(callFixture, "Alice", "ref@test.local", "tok")
+      val sig = signatureOf(mailer)
+      sig must include ("Test Site")
+      sig must not be "Test Site"
+      sig must not include "{"
+    }
+
+    "use the site name override of the call in the default signature" in {
+      val (svc, mailer) = service(None)
+      val call = callFixture.copy(site_name_override = Some("Other Site"))
+      svc.sendRefereeRequestReminder(call, "Alice", "ref@test.local", "tok")
+      signatureOf(mailer) must include ("Other Site")
+    }
+
+    "sign with email_signature when configured" in {
+      val (svc, mailer) = service(None, Some("The Test jury"))
+      svc.sendRefereeRequest(callFixture, "Alice", "ref@test.local", "tok")
+      signatureOf(mailer) mustBe "The Test jury"
+      svc.sendRefereeRequestReminder(callFixture, "Alice", "ref@test.local", "tok")
+      signatureOf(mailer) mustBe "The Test jury"
+    }
+
+    "prefer the signature override of the call over email_signature" in {
+      val (svc, mailer) = service(None, Some("The Test jury"))
+      val call = callFixture.copy(email_signature_override = Some("The hiring committee"))
+      svc.sendRefereeRequest(call, "Alice", "ref@test.local", "tok")
+      signatureOf(mailer) mustBe "The hiring committee"
+    }
+
+    "treat a blank email_signature as unset" in {
+      val (svc, mailer) = service(None, Some("  "))
+      svc.sendRefereeRequest(callFixture, "Alice", "ref@test.local", "tok")
+      signatureOf(mailer) must include ("Test Site")
     }
   }
 }

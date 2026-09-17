@@ -35,6 +35,11 @@ starting from the first tagged OSS release.
   stays silent unless the upstream actually changed.
 
 ### Changed
+- Referee requests and reminders are no longer signed with the bare site
+  name, which read as if the site itself wrote the email. The signature is
+  now, in order of precedence: the call's `email_signature_override` column
+  (evolution 3), the new optional `email_signature` setting, or the default
+  “The <site name> committee” (`email.signature.default`).
 - A referee request whose status is `cancelled` no longer accepts a
   submission: `GET /submit` and `POST /submit` both answer `410 Gone` and the
   page explains why (`submit.cancelled`). A `declined` request is deliberately

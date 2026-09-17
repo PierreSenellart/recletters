@@ -22,6 +22,7 @@ case class Call(
     grace_seconds: Int,
     site_name_override: Option[String],
     email_from_override: Option[String],
+    email_signature_override: Option[String],
     is_archived: Boolean
 ) {
   def effectiveDeadline: ZonedDateTime =
@@ -44,7 +45,8 @@ class CallService @Inject() (db: Database) {
   def listVisible(): Seq[Call] =
     db.withConnection { implicit c =>
       SQL"""SELECT id, slug, label, opens_at, deadline, grace_seconds,
-                   site_name_override, email_from_override, is_archived
+                   site_name_override, email_from_override,
+                   email_signature_override, is_archived
             FROM call_
             ORDER BY deadline DESC"""
         .as(Call.parser.*)
@@ -53,7 +55,8 @@ class CallService @Inject() (db: Database) {
   def find(id: Int): Option[Call] =
     db.withConnection { implicit c =>
       SQL"""SELECT id, slug, label, opens_at, deadline, grace_seconds,
-                   site_name_override, email_from_override, is_archived
+                   site_name_override, email_from_override,
+                   email_signature_override, is_archived
             FROM call_ WHERE id=$id"""
         .as(Call.parser.singleOpt)
     }
@@ -61,7 +64,8 @@ class CallService @Inject() (db: Database) {
   def findBySlug(slug: String): Option[Call] =
     db.withConnection { implicit c =>
       SQL"""SELECT id, slug, label, opens_at, deadline, grace_seconds,
-                   site_name_override, email_from_override, is_archived
+                   site_name_override, email_from_override,
+                   email_signature_override, is_archived
             FROM call_ WHERE slug=$slug"""
         .as(Call.parser.singleOpt)
     }

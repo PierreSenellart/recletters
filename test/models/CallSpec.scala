@@ -19,6 +19,7 @@ class CallSpec extends PlaySpec {
       grace_seconds = graceSeconds,
       site_name_override  = None,
       email_from_override = None,
+      email_signature_override = None,
       is_archived   = false
     )
   }

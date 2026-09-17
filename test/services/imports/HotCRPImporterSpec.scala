@@ -49,6 +49,7 @@ class HotCRPImporterSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAn
       grace_seconds = 0,
       site_name_override  = None,
       email_from_override = None,
+      email_signature_override = None,
       is_archived   = false
     )
 

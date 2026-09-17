@@ -93,8 +93,12 @@ import.noActiveCall = Aucune campagne active n''est configurée.
 email.passwordReset.subject = {0} : réinitialisation de mot de passe
 email.passwordReset.body = Vous avez demandé la réinitialisation du mot de passe permettant l''accès\nà {0}.\n\nPour ce faire, veuillez utiliser l''URL suivante :\n\n  {1}\n\nCe lien n''est valable que 48 heures. Passé ce délai, il vous faudra\ndemander un nouveau lien de réinitialisation.\n\nVous pourrez ensuite vous connecter en utilisant votre adresse ({2}).
 
+# Signature par défaut des courriels aux recommandeur·euses, utilisée quand ni
+# `email_signature` ni la campagne n'en définit. {0}=nom du site.
+email.signature.default = Le comité du {0}
+
 # Arguments du sujet : {0}=intitulé de la campagne.
-# Arguments du corps : {0}=candidat·e, {1}=intitulé de la campagne, {2}=nom du site, {3}=URL de soumission, {4}=date limite.
+# Arguments du corps : {0}=candidat·e, {1}=intitulé de la campagne, {2}=signature, {3}=URL de soumission, {4}=date limite.
 email.refereeRequest.subject = {0} : demande de recommandation
 email.refereeRequest.body = Bonjour,\n\n{0} vous a indiqué·e comme recommandeur·euse pour sa candidature\nà {1}.\n\nVeuillez utiliser l''URL suivante pour soumettre votre lettre (ou pour\ndécliner cette demande) :\n\n  {3}\n\nNous devons recevoir votre lettre avant le {4}.\n\nMerci d''avance,\n\n-- \n{2}
 

@@ -27,6 +27,12 @@ class MailerService @Inject() (
   private val bcc: Seq[String] =
     config.getOptional[String]("email_bcc").map(_.trim).filter(_.nonEmpty).toSeq
 
+  /** Optional signatory of referee-facing mail, e.g. "The Foo Award
+    * committee". Empty/unset falls back to a default built from the site name.
+    */
+  private val globalSignature: Option[String] =
+    config.getOptional[String]("email_signature").map(_.trim).filter(_.nonEmpty)
+
   private def lang: Lang = langs.preferred(langs.availables)
 
   private def msgs                       = messagesApi.preferred(Seq(lang))
@@ -34,6 +40,13 @@ class MailerService @Inject() (
     call.flatMap(_.site_name_override).getOrElse(globalSite)
   private def from(call: Option[Call])   =
     call.flatMap(_.email_from_override).getOrElse(globalFrom)
+
+  private def signature(call: Call): String =
+    call.email_signature_override
+      .map(_.trim)
+      .filter(_.nonEmpty)
+      .orElse(globalSignature)
+      .getOrElse(msgs("email.signature.default", site(Some(call))))
 
   private def formatDeadline(call: Call): String = {
     val locale = Locale.forLanguageTag(lang.code)
@@ -56,8 +69,8 @@ class MailerService @Inject() (
   def sendRefereeRequest(call: Call, applicant: String, to: String, token: String): Unit = {
     val url      = config.get[String]("site_url") + "/submit?token=" + token
     val deadline = formatDeadline(call)
-    val s        = site(Some(call))
-    // Args (in this order): applicant, call_label, site_name, url, deadline.
+    val s        = signature(call)
+    // Args (in this order): applicant, call_label, signature, url, deadline.
     val subject  = msgs("email.refereeRequest.subject", call.label)
     val body     = msgs("email.refereeRequest.body", applicant, call.label, s, url, deadline)
     mailerClient.send(
@@ -73,7 +86,7 @@ class MailerService @Inject() (
   ): Unit = {
     val url      = config.get[String]("site_url") + "/submit?token=" + token
     val deadline = formatDeadline(call)
-    val s        = site(Some(call))
+    val s        = signature(call)
     val subject  = msgs("email.refereeRequest.reminder.subject", call.label)
     val body = msgs(
       "email.refereeRequest.reminder.body",

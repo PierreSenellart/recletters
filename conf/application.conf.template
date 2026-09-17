@@ -75,6 +75,11 @@ site_url       = "SITE_URL"
 main_site_url  = "MAIN_SITE_URL"
 email_from     = "EMAIL_FROM"
 
+# Optional signatory of referee-facing mail (requests + reminders), placed
+# after the "-- " line. A call can override it (`email_signature_override` in
+# the `call_` table). Leave unset/empty to sign as "The <site_name> committee".
+# email_signature = "The Foo Award committee"
+
 # Optional blind copy of referee-facing mail (requests + reminders), giving the
 # committee a durable archive of what was sent — the SMTP log records only
 # envelope metadata and is short-lived. Password-reset mails are never Bcc'd.
