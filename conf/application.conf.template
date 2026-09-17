@@ -68,16 +68,16 @@ db {
   # default.username = "USERNAME"
 }
 
-# Branding and content (per-call overrides take precedence; see the `call_`
-# table). These are the global defaults.
+# Branding and content. These are the global defaults; per-call overrides take
+# precedence and are edited on the /settings page (stored in the `call_` table).
 site_name      = "SITE_NAME"
 site_url       = "SITE_URL"
 main_site_url  = "MAIN_SITE_URL"
 email_from     = "EMAIL_FROM"
 
 # Optional signatory of referee-facing mail (requests + reminders), placed
-# after the "-- " line. A call can override it (`email_signature_override` in
-# the `call_` table). Leave unset/empty to sign as "The <site_name> committee".
+# after the "-- " line. A call can override it on the /settings page. Leave
+# unset/empty to sign as "The <site_name> committee".
 # email_signature = "The Foo Award committee"
 
 # Optional blind copy of referee-facing mail (requests + reminders), giving the

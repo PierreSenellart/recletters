@@ -8,6 +8,7 @@ intro.title = Accueil
 intro.listRequests = Lister toutes les demandes de recommandation
 intro.addManually = Ajouter manuellement une demande de recommandation
 intro.importDossiers = Importer des dossiers
+intro.settings = Paramètres
 
 login.title = Connexion
 login.email = Adresse de courriel
@@ -89,6 +90,20 @@ import.uploadCsv = Téléverser un CSV
 import.csv.help = Colonnes CSV : external_ref, name, url, notes, referee_email, referee_role
 import.success = {0} dossier(s) importés ({1} nouveaux, {2} mis à jour, {3} inchangés).
 import.noActiveCall = Aucune campagne active n''est configurée.
+
+settings.title = Paramètres
+settings.saved = Paramètres enregistrés pour {0}.
+settings.global = Paramètres globaux
+settings.global.help = Ces valeurs proviennent du fichier de configuration du serveur (application.conf). Elles ne peuvent être modifiées que dans ce fichier, et un changement prend effet après le redémarrage du service.
+settings.unset = (non défini)
+settings.call = Paramètres pour {0}
+settings.call.help = Chaque champ ci-dessous remplace le paramètre global de même nom pour cette campagne uniquement, et s''applique dès le prochain courriel envoyé. Laissez un champ vide pour utiliser le paramètre global.
+settings.siteName = Nom du site
+settings.emailFrom = Expéditeur des courriels
+settings.emailSignature = Signature des courriels
+settings.submit = Enregistrer
+settings.currentSignature = Les courriels aux recommandeur·euses pour cette campagne sont actuellement signés :
+settings.error.controlChars = Les sauts de ligne et les caractères de contrôle ne sont pas autorisés.
 
 email.passwordReset.subject = {0} : réinitialisation de mot de passe
 email.passwordReset.body = Vous avez demandé la réinitialisation du mot de passe permettant l''accès\nà {0}.\n\nPour ce faire, veuillez utiliser l''URL suivante :\n\n  {1}\n\nCe lien n''est valable que 48 heures. Passé ce délai, il vous faudra\ndemander un nouveau lien de réinitialisation.\n\nVous pourrez ensuite vous connecter en utilisant votre adresse ({2}).

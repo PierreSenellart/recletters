@@ -9,6 +9,7 @@ intro.title = Home
 intro.listRequests = List all referee requests
 intro.addManually = Manually add a referee request
 intro.importDossiers = Import dossiers
+intro.settings = Settings
 
 login.title = Log in
 login.email = Email
@@ -90,6 +91,20 @@ import.uploadCsv = Upload CSV
 import.csv.help = CSV columns: external_ref, name, url, notes, referee_email, referee_role
 import.success = Imported {0} dossier(s) ({1} new, {2} updated, {3} unchanged).
 import.noActiveCall = No active call configured.
+
+settings.title = Settings
+settings.saved = Settings saved for {0}.
+settings.global = Global settings
+settings.global.help = These values come from the server configuration file (application.conf). They can only be changed there, and a change takes effect after the service is restarted.
+settings.unset = (not set)
+settings.call = Settings for {0}
+settings.call.help = Each field below replaces the global setting of the same name for this call only, and applies to the next email sent. Leave a field empty to use the global setting.
+settings.siteName = Site name
+settings.emailFrom = Sender of emails
+settings.emailSignature = Signature of emails
+settings.submit = Save
+settings.currentSignature = Emails to referees for this call are currently signed:
+settings.error.controlChars = Line breaks and control characters are not allowed.
 
 email.passwordReset.subject = {0}: password reinitialization
 email.passwordReset.body = You have requested to reset the password needed to access\n{0}.\n\nTo do so, please open the following URL:\n\n  {1}\n\nThis link is only valid for 48 hours. Past this time, you will\nneed to request a new password-reset link.\n\nYou will then be able to log in using your email ({2}).

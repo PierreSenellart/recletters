@@ -46,5 +46,10 @@ GET  /import                        controllers.ImportController.index()
 POST /import/run                    controllers.ImportController.runImporter(name: String)
 POST /import/csv                    controllers.ImportController.uploadCsv()
 
+# Settings page for committee members (session-authed, CSRF on): shows the
+# global branding settings and edits the per-call overrides.
+GET  /settings                      controllers.SettingsController.index()
+POST /settings                      controllers.SettingsController.update()
+
 # Static assets.
 GET  /assets/*file                  controllers.Assets.versioned(path="/public", file: Asset)

@@ -41,7 +41,11 @@ class MailerService @Inject() (
   private def from(call: Option[Call])   =
     call.flatMap(_.email_from_override).getOrElse(globalFrom)
 
-  private def signature(call: Call): String =
+  /** The signature placed at the bottom of referee-facing mail for `call`:
+    * its own override, else `email_signature`, else a default built from the
+    * site name.
+    */
+  def signature(call: Call): String =
     call.email_signature_override
       .map(_.trim)
       .filter(_.nonEmpty)

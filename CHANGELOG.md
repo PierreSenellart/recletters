@@ -33,6 +33,12 @@ starting from the first tagged OSS release.
   drift. Created and updated dossiers are logged at INFO.
 - `docs/integration.md`: *Scheduled refresh* section with a cron recipe that
   stays silent unless the upstream actually changed.
+- **Settings page** (`/settings`, linked from the home page) for logged-in
+  committee members: lists the global branding and reminder settings
+  read-only, and edits the per-call overrides (`site_name_override`,
+  `email_from_override`, `email_signature_override`) of the selected call,
+  which previously could only be set in SQL. An empty field clears the
+  override; line breaks and control characters are refused.
 
 ### Changed
 - Referee requests and reminders are no longer signed with the bare site

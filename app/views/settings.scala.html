@@ -1,0 +1,59 @@
+@(f: Form[controllers.CallOverrides], globals: Seq[(String, Option[String])],
+  signature: Option[String])(
+  implicit request: RequestHeader,
+  active_call: Option[Call], calls: Seq[Call], user: Option[User],
+  config: play.api.Configuration, messages: play.api.i18n.Messages)
+
+@import views.html.helper.FieldConstructor
+@implicitField: FieldConstructor = @{FieldConstructor(fieldConstructorTemplate.f)}
+
+@global(key: String) = @{globals.toMap.get(key).flatten.getOrElse("")}
+
+@main(messages("settings.title")) {
+  @if(request.flash.get("settings.saved").isDefined) {
+    <p class="ok">@messages("settings.saved", request.flash.get("settings.saved").get)</p>
+  }
+
+  <h2>@messages("settings.global")</h2>
+  <p>@messages("settings.global.help")</p>
+  <table>
+    @for((key, value) <- globals) {
+      <tr>
+        <th><code>@key</code></th>
+        <td>@value.getOrElse(messages("settings.unset"))</td>
+      </tr>
+    }
+  </table>
+
+  @if(active_call.isEmpty) {
+    <p>@messages("import.noActiveCall")</p>
+  } else {
+    <h2>@messages("settings.call", active_call.get.label)</h2>
+    <p>@messages("settings.call.help")</p>
+
+    @if(f.hasGlobalErrors) {
+      <ul class="error">
+        @for(error <- f.globalErrors) { <li>@error.format</li> }
+      </ul>
+    }
+
+    @helper.form(action = routes.SettingsController.update(), Symbol("id") -> "settings") {
+      @helper.CSRF.formField
+      <div>
+        @helper.inputText(f("site_name"),
+          Symbol("_label") -> messages("settings.siteName"),
+          Symbol("placeholder") -> global("site_name"))
+        @helper.inputText(f("email_from"),
+          Symbol("_label") -> messages("settings.emailFrom"),
+          Symbol("placeholder") -> global("email_from"))
+        @helper.inputText(f("email_signature"),
+          Symbol("_label") -> messages("settings.emailSignature"),
+          Symbol("placeholder") -> global("email_signature"))
+
+        <input type="submit" value="@messages("settings.submit")">
+      </div>
+    }
+
+    <p>@messages("settings.currentSignature") <strong>@signature.get</strong></p>
+  }
+}

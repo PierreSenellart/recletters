@@ -52,3 +52,5 @@ td.yesno { text-align: center; }
 #year_choice { float: right; }
 
 input[type="submit"] { margin-top: 1ex; }
+
+#settings input[type="text"] { width: 30em; max-width: 100%; }

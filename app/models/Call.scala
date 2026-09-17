@@ -92,4 +92,22 @@ class CallService @Inject() (db: Database) {
             VALUES ($slug, $label, $opensAt, $deadline, $graceSeconds)"""
         .executeInsert(scalar[Int].single)
     }
+
+  /** Sets the per-call overrides of the global branding settings. `None`
+    * clears an override, so the call falls back to the global value.
+    */
+  def updateOverrides(
+      id: Int,
+      siteName: Option[String],
+      emailFrom: Option[String],
+      emailSignature: Option[String]
+  ): Boolean =
+    db.withConnection { implicit c =>
+      SQL"""UPDATE call_
+            SET site_name_override=$siteName,
+                email_from_override=$emailFrom,
+                email_signature_override=$emailSignature
+            WHERE id=$id"""
+        .executeUpdate() > 0
+    }
 }
