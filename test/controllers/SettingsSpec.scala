@@ -100,8 +100,14 @@ class SettingsSpec extends PlaySpec with GuiceOneAppPerSuite with DBFixtures {
     }
 
     "clear an override when its field is left empty" in {
-      post("site_name" -> "Other Site", "email_from" -> "", "email_signature" -> "The jury")
-      post("site_name" -> "", "email_from" -> "", "email_signature" -> "  ")
+      // post() returns a Future: wait for each write before reading the row.
+      status(
+        post("site_name" -> "Other Site", "email_from" -> "", "email_signature" -> "The jury")
+      ) mustBe SEE_OTHER
+      overrides() mustBe ((Some("Other Site"), None, Some("The jury")))
+      status(
+        post("site_name" -> "", "email_from" -> "", "email_signature" -> "  ")
+      ) mustBe SEE_OTHER
       overrides() mustBe ((None, None, None))
     }
 
